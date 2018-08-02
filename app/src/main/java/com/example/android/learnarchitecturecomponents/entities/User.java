@@ -24,6 +24,12 @@ public class User {
     @Ignore
     Bitmap picture;
 
+    public User(String firstName, String lastName, Address address) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+    }
+
     @Embedded
     public Address address;
 
@@ -51,4 +57,13 @@ public class User {
         this.lastName = lastName;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", address=" + address +
+                '}';
+    }
 }
