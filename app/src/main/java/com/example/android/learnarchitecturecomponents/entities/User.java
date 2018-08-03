@@ -24,6 +24,8 @@ public class User {
     @Ignore
     Bitmap picture;
 
+    private String job;
+
     public User(String firstName, String lastName, Address address) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -57,12 +59,23 @@ public class User {
         this.lastName = lastName;
     }
 
+
+    public String getJob() {
+        return job;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
+                ", picture=" + picture +
+                ", job='" + job + '\'' +
                 ", address=" + address +
                 '}';
     }

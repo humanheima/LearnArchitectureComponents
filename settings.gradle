@@ -1,1 +1,1 @@
-include ':lifecycle'
+include ':app'
