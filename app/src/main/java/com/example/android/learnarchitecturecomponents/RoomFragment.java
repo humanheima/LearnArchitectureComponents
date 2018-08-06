@@ -1,6 +1,7 @@
 package com.example.android.learnarchitecturecomponents;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.Observer;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.example.android.learnarchitecturecomponents.databinding.RoomFragmentBind;
 import com.example.android.learnarchitecturecomponents.entities.Address;
+import com.example.android.learnarchitecturecomponents.entities.Fruit;
 import com.example.android.learnarchitecturecomponents.entities.NameTuple;
 import com.example.android.learnarchitecturecomponents.entities.User;
 
@@ -49,13 +51,20 @@ public class RoomFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        findAllFruit();
+    }
+
+    @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_insert:
-                insert();
+                //insert();
+                insertFruit();
                 break;
             case R.id.btn_query:
-                query();
+                //query();
                 break;
             case R.id.btn_update:
                 update();
@@ -149,10 +158,39 @@ public class RoomFragment extends Fragment implements View.OnClickListener {
             public void run() {
                 Address address = new Address("国泰路", "杨浦区", "上海", 21610);
                 User user = new User("hongmin", "du", address);
-                user.setJob( "android develop");
+                user.setJob("android develop");
                 long id = App.getDataBase().userDao().insertUser(user);
                 Log.d(TAG, "insert: id= " + id);
             }
         });
     }
+
+    private void insertFruit() {
+        App.getExecutors().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Fruit fruit = new Fruit("苹果", 5D);
+                long rowId = App.getDataBase().fruitDao().insertFruit(fruit);
+                Log.d(TAG, "insertFruit: " + rowId);
+            }
+        });
+    }
+
+    private void findAllFruit() {
+        App.getExecutors().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                App.getDataBase().fruitDao().getFruits().observe(getActivity(), new Observer<List<Fruit>>() {
+                    @Override
+                    public void onChanged(@Nullable List<Fruit> fruitList) {
+                        for (Fruit fruit : fruitList) {
+                            Log.d(TAG, "onChanged: " + fruit.toString());
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+
 }

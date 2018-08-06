@@ -10,6 +10,7 @@ import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.example.android.learnarchitecturecomponents.dao.FruitDao;
 import com.example.android.learnarchitecturecomponents.dao.UserDao;
 import com.example.android.learnarchitecturecomponents.entities.Fruit;
 import com.example.android.learnarchitecturecomponents.entities.User;
@@ -27,6 +28,8 @@ public abstract class AppDataBase extends RoomDatabase {
     private static AppDataBase instance;
 
     public abstract UserDao userDao();
+
+    public abstract FruitDao fruitDao();
 
     public static AppDataBase getInstance(Context context, final AppExecutors executors) {
         if (instance == null) {
