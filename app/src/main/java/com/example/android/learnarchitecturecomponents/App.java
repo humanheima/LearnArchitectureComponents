@@ -1,8 +1,9 @@
 package com.example.android.learnarchitecturecomponents;
 
 import android.app.Application;
-import android.content.Context;
 
+import com.example.android.learnarchitecturecomponents.room.AppDataBase;
+import com.example.android.learnarchitecturecomponents.room.AppExecutors;
 import com.facebook.stetho.Stetho;
 
 /**

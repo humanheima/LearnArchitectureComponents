@@ -1,4 +1,4 @@
-package com.example.android.learnarchitecturecomponents.dao;
+package com.example.android.learnarchitecturecomponents.room.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -7,8 +7,8 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import com.example.android.learnarchitecturecomponents.entities.NameTuple;
-import com.example.android.learnarchitecturecomponents.entities.User;
+import com.example.android.learnarchitecturecomponents.room.entities.NameTuple;
+import com.example.android.learnarchitecturecomponents.room.entities.User;
 
 import java.util.List;
 

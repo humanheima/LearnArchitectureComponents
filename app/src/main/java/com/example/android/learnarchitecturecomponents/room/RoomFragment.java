@@ -1,4 +1,4 @@
-package com.example.android.learnarchitecturecomponents;
+package com.example.android.learnarchitecturecomponents.room;
 
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.Observer;
@@ -11,15 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.android.learnarchitecturecomponents.App;
+import com.example.android.learnarchitecturecomponents.R;
 import com.example.android.learnarchitecturecomponents.databinding.RoomFragmentBind;
-import com.example.android.learnarchitecturecomponents.entities.Address;
-import com.example.android.learnarchitecturecomponents.entities.Fruit;
-import com.example.android.learnarchitecturecomponents.entities.NameTuple;
-import com.example.android.learnarchitecturecomponents.entities.User;
+import com.example.android.learnarchitecturecomponents.room.entities.Address;
+import com.example.android.learnarchitecturecomponents.room.entities.Fruit;
+import com.example.android.learnarchitecturecomponents.room.entities.User;
 
 import java.util.List;
 
-import io.reactivex.Scheduler;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;

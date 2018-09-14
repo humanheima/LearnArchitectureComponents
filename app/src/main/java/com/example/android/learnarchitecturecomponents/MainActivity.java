@@ -3,6 +3,8 @@ package com.example.android.learnarchitecturecomponents;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.android.learnarchitecturecomponents.room.RoomFragment;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override

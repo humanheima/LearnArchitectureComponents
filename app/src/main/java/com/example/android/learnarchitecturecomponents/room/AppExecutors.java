@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.learnarchitecturecomponents;
+package com.example.android.learnarchitecturecomponents.room;
 
 import android.os.Handler;
 import android.os.Looper;

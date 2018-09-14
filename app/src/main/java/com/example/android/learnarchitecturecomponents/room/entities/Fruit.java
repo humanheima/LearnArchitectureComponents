@@ -1,4 +1,4 @@
-package com.example.android.learnarchitecturecomponents.entities;
+package com.example.android.learnarchitecturecomponents.room.entities;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;

@@ -6,7 +6,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".TestImageViewActivity">
+        tools:context=".livedata.LiveDataActivity">
 
         <FrameLayout
             android:layout_width="100dp"

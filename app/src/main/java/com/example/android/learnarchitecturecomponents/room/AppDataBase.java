@@ -1,4 +1,4 @@
-package com.example.android.learnarchitecturecomponents;
+package com.example.android.learnarchitecturecomponents.room;
 
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
@@ -6,14 +6,13 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.migration.Migration;
 import android.content.Context;
-import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.example.android.learnarchitecturecomponents.dao.FruitDao;
-import com.example.android.learnarchitecturecomponents.dao.UserDao;
-import com.example.android.learnarchitecturecomponents.entities.Fruit;
-import com.example.android.learnarchitecturecomponents.entities.User;
+import com.example.android.learnarchitecturecomponents.room.dao.FruitDao;
+import com.example.android.learnarchitecturecomponents.room.dao.UserDao;
+import com.example.android.learnarchitecturecomponents.room.entities.Fruit;
+import com.example.android.learnarchitecturecomponents.room.entities.User;
 
 /**
  * Created by DuMingwei on 2018/8/2.
