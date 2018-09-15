@@ -137,32 +137,7 @@ public String getJob() {
 * 创建MIGRATION_2_3并应用
 
 ## LiveData
-LiveData是一个可观察的数据持有类。和常规的可观察者不一样，LiveData具有生命感知能力，意味着LiveData
-遵循其他应用组件，例如Activity，Fragment或者Service的生命周期。这种感知能力确保LiveData只会更新那些
-处于生命周期活动状态的应用组件观察者。
-引入LiveData组件
-```java
-def lifecycle_version = "1.1.1"
-implementation "android.arch.lifecycle:livedata:$lifecycle_version"
-```
-LiveData 认为一个观察者处于生命周期的 `STARTED`或者`RESUMED`状态的时候，是处于活动状态。LiveData的
-更新信息仅通知处于活动状态的观察者。处于非活动状态的观察者不会收到通知。
 
-你可以在注册一个观察者的时候同时传入一个实现了`LifecycleOwner`接口的对象。
-
-```java
-@MainThread
-    public void observe(@NonNull LifecycleOwner owner, @NonNull Observer<T> observer) {
-        owner.getLifecycle().addObserver(wrapper);
-    }
-```
-这样做的好处是当 `owner`处于生命周期 `DESTORYED`状态的时候，LiveData可以移除对应的 `observer`。
-这种方式对于activities和fragments来说特别有用，因为这样可以安全的定语LiveData对象而不用担心内存泄漏。
-因为当activities和fragments处于生命周期`DESTORYED`状态的时候会立即取消订阅。
-
-使用LiveData的优势
-* 确保你的UI和你的数据状态一致
- LiveData遵循观察者模式。当观察者的生命周期改变的时候，LiveData会通知观察者。
 
 
 
