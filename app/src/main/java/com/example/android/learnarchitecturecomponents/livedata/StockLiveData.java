@@ -1,6 +1,6 @@
 package com.example.android.learnarchitecturecomponents.livedata;
 
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 
 import java.math.BigDecimal;
 

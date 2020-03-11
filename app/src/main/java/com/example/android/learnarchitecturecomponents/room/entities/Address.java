@@ -1,6 +1,6 @@
 package com.example.android.learnarchitecturecomponents.room.entities;
 
-import android.arch.persistence.room.ColumnInfo;
+import androidx.room.ColumnInfo;
 
 public class Address {
 
