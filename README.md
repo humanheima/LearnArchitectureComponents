@@ -2,7 +2,12 @@
 
 ###Room
 
-在 build.gradle 文件中，配置schema
+参考链接 
+* [Android Room with a View - Kotlin](https://codelabs.developers.google.com/codelabs/android-room-with-a-view-kotlin/index.html?index=..%2F..index#4)
+* [googlecodelabs android-room-with-a-view](https://github.com/googlecodelabs/android-room-with-a-view/tree/kotlin)
+
+
+在 build.gradle 文件中，配置schema，可以看到在项目根目录schemas文件夹下看到创建的表结构等信息。
 ```html
  defaultConfig {
         ...
