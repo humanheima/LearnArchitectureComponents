@@ -11,9 +11,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".ExampleActivity">
 
         </activity>
+        <activity android:name=".room.NewWordActivity" />
         <activity android:name=".livedata.LiveDataActivity" />
 
         <activity android:name=".StartActivity">

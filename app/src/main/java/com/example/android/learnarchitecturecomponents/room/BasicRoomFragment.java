@@ -1,15 +1,17 @@
 package com.example.android.learnarchitecturecomponents.room;
 
 import android.annotation.SuppressLint;
-import androidx.lifecycle.Observer;
-import androidx.databinding.DataBindingUtil;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 
 import com.example.android.learnarchitecturecomponents.App;
 import com.example.android.learnarchitecturecomponents.R;
@@ -24,25 +26,29 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
-public class RoomFragment extends Fragment implements View.OnClickListener {
+/**
+ * Crete by dumingwei on 2020-03-12
+ * Desc: Basic room use
+ */
+public class BasicRoomFragment extends Fragment implements View.OnClickListener {
 
-    private static final String TAG = "RoomFragment";
+    private static final String TAG = "BasicRoomFragment";
     private RoomFragmentBind binding;
 
-    public RoomFragment() {
+    public BasicRoomFragment() {
         // Required empty public constructor
     }
 
-    public static RoomFragment newInstance() {
-        RoomFragment fragment = new RoomFragment();
+    public static BasicRoomFragment newInstance() {
+        BasicRoomFragment fragment = new BasicRoomFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_room, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_baisc_room, container, false);
         binding.btnInsert.setOnClickListener(this);
         binding.btnQuery.setOnClickListener(this);
         binding.btnUpdate.setOnClickListener(this);

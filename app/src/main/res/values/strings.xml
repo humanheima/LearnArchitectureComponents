@@ -3,4 +3,10 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hint_word">Word...</string>
+    <string name="button_save">Save</string>
+    <string name="empty_not_saved">Word not saved because it is empty.</string>
+    <string name="livedata">LiveData</string>
+    <string name="basic_room_knowledge">Basic room knowledge</string>
+    <string name="room_example_from_codelab">Room example from codelab</string>
 </resources>

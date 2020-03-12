@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".StartActivity">
 
     <Button
@@ -10,7 +11,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="onClick"
-        android:text="LiveData"
+        android:text="@string/livedata"
         android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/btnBasicRoom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:text="@string/basic_room_knowledge"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/btnRoomCodelabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:text="@string/room_example_from_codelab"
+        android:textAllCaps="false" />
+
 
 </LinearLayout>
