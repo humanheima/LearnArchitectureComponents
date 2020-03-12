@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.android.learnarchitecturecomponents.App;
 import com.example.android.learnarchitecturecomponents.R;
@@ -22,9 +23,7 @@ import com.example.android.learnarchitecturecomponents.room.entities.User;
 
 import java.util.List;
 
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
+import kotlin.random.Random;
 
 /**
  * Crete by dumingwei on 2020-03-12
@@ -35,6 +34,8 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
     private static final String TAG = "BasicRoomFragment";
     private RoomFragmentBind binding;
 
+    private FruitViewModel fruitViewModel;
+
     public BasicRoomFragment() {
         // Required empty public constructor
     }
@@ -44,6 +45,15 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        fruitViewModel = new ViewModelProvider(this,
+                new ViewModelProvider.AndroidViewModelFactory(getActivity().getApplication())
+        ).get(FruitViewModel.class);
     }
 
     @Override
@@ -59,18 +69,19 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        findAllFruit();
+        observeFruits();
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_insert:
-                //insert();
                 insertFruit();
+                insertAddress();
                 break;
             case R.id.btn_query:
                 //query();
+                queryFruit();
                 break;
             case R.id.btn_update:
                 update();
@@ -81,6 +92,19 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
             default:
                 break;
         }
+    }
+
+    private void insertAddress() {
+        App.getExecutors().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Address address = new Address("国泰路", "杨浦区", "上海", 21610);
+                User user = new User("hongmin", "du", address);
+                user.setJob("android develop");
+                long id = App.getDataBase().userDao().insertUser(user);
+                Log.d(TAG, "insert: id= " + id);
+            }
+        });
     }
 
     private void delete() {
@@ -96,6 +120,9 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
         });
     }
 
+    /**
+     * 在Java中无法使用协程，可以使用线程池来执行数据库操作
+     */
     private void update() {
         App.getExecutors().diskIO().execute(new Runnable() {
             @Override
@@ -121,7 +148,7 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
             }
         });*/
 
-        App.getDataBase().userDao().findUserMaybeWithId(1L)
+        /*App.getDataBase().userDao().findUserMaybeWithId(1L)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .subscribe(new Consumer<User>() {
@@ -139,7 +166,7 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
                     public void run() throws Exception {
                         Log.d(TAG, "run: complete");
                     }
-                });
+                });*/
 
         /*App.getDataBase().userDao().getUserById(1L)
                 .subscribeOn(Schedulers.io())
@@ -158,42 +185,28 @@ public class BasicRoomFragment extends Fragment implements View.OnClickListener 
 
     }
 
-    private void insert() {
-        App.getExecutors().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                Address address = new Address("国泰路", "杨浦区", "上海", 21610);
-                User user = new User("hongmin", "du", address);
-                user.setJob("android develop");
-                long id = App.getDataBase().userDao().insertUser(user);
-                Log.d(TAG, "insert: id= " + id);
-            }
-        });
-    }
-
     private void insertFruit() {
-        App.getExecutors().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                Fruit fruit = new Fruit("苹果", 5D);
-                long rowId = App.getDataBase().fruitDao().insertFruit(fruit);
-                Log.d(TAG, "insertFruit: " + rowId);
-            }
-        });
+        Fruit fruit = new Fruit("苹果", Random.Default.nextDouble(1, 10));
+        fruitViewModel.insert(fruit);
     }
 
-    private void findAllFruit() {
-        App.getExecutors().diskIO().execute(new Runnable() {
+    private void queryFruit() {
+        fruitViewModel.query(1L).observe(this, new Observer<Fruit>() {
             @Override
-            public void run() {
-                App.getDataBase().fruitDao().getFruits().observe(getActivity(), new Observer<List<Fruit>>() {
-                    @Override
-                    public void onChanged(@Nullable List<Fruit> fruitList) {
-                        for (Fruit fruit : fruitList) {
-                            Log.d(TAG, "onChanged: " + fruit.toString());
-                        }
-                    }
-                });
+            public void onChanged(Fruit fruit) {
+                Log.d(TAG, "queryFruit: " + fruit.getName());
+            }
+        });
+
+    }
+
+    private void observeFruits() {
+        fruitViewModel.getFruits().observe(this, new Observer<List<Fruit>>() {
+            @Override
+            public void onChanged(List<Fruit> fruits) {
+                for (Fruit fruit : fruits) {
+                    Log.d(TAG, "onChanged: " + fruit.toString());
+                }
             }
         });
     }
