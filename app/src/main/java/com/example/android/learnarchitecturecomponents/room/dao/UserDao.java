@@ -9,6 +9,7 @@ import androidx.room.Update;
 
 import com.example.android.learnarchitecturecomponents.room.entities.NameTuple;
 import com.example.android.learnarchitecturecomponents.room.entities.User;
+import com.example.android.learnarchitecturecomponents.room.entities.Word;
 
 import java.util.List;
 
@@ -28,6 +29,9 @@ public interface UserDao {
 
     @Insert
     void insertBoth(User user1, User user2);
+
+    @Insert
+    void insert(Word... words);
 
     @Insert
     void insertWithFriends(User user, List<User> friends);

@@ -1,25 +1,18 @@
 ##Learn android architecture components
 
-###Room
+### Android Room 一瞥
 
+由浅入深，学习Room。
+
+
+
+### 迁移 Room 数据库
 参考链接 
 * [Android Room with a View - Kotlin](https://codelabs.developers.google.com/codelabs/android-room-with-a-view-kotlin/index.html?index=..%2F..index#4)
 * [googlecodelabs android-room-with-a-view](https://github.com/googlecodelabs/android-room-with-a-view/tree/kotlin)
+* [添加依赖](https://developer.android.google.cn/jetpack/androidx/releases/room?hl=zh_cn#declaring_dependencies)
 
 
-在 build.gradle 文件中，配置schema，可以看到在项目根目录schemas文件夹下看到创建的表结构等信息。
-```html
- defaultConfig {
-        ...
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ["room.schemaLocation":
-                                     "$projectDir/schemas".toString()]
-            }
-        }
-
-    }
-```
 
 **只查询某些列，但是这个方法还有待测试，因为查出来的结果条数总是少**
 ```java

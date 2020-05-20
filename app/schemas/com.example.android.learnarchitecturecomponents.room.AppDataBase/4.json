@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "06d8f0df2ad1c1b689d06fed2d8877c9",
+    "identityHash": "78491c159396d884328ef2a894ada0af",
     "entities": [
       {
         "tableName": "User",
@@ -100,13 +100,19 @@
       },
       {
         "tableName": "word_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`word` TEXT NOT NULL, PRIMARY KEY(`word`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`word` TEXT NOT NULL, `name` TEXT, PRIMARY KEY(`word`))",
         "fields": [
           {
             "fieldPath": "word",
             "columnName": "word",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -122,7 +128,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '06d8f0df2ad1c1b689d06fed2d8877c9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '78491c159396d884328ef2a894ada0af')"
     ]
   }
 }

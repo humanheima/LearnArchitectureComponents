@@ -67,7 +67,7 @@ abstract class AppDataBase : RoomDatabase() {
                             Log.d(TAG, "onOpen: ")
                         }
                     })
-                    .addCallback(WordDatabaseCallback(scope))
+                    //.addCallback(WordDatabaseCallback(scope))
                     .build()
         }
 
@@ -90,33 +90,6 @@ abstract class AppDataBase : RoomDatabase() {
         }
     }
 
-    class WordDatabaseCallback(private val scope: CoroutineScope) : RoomDatabase.Callback() {
-
-        private val TAG = "WordDatabaseCallback"
-
-        override fun onOpen(db: SupportSQLiteDatabase) {
-            super.onOpen(db)
-            Log.d(TAG, "onOpen: ")
-            INSTANCE?.let { database ->
-                scope.launch {
-                    populateDatabase(database.wordDAO())
-                }
-            }
-
-        }
-
-        suspend fun populateDatabase(wordDao: WordDao) {
-            // Delete all content here.
-            wordDao.deleteAll()
-            var word = Word("Hello")
-            wordDao.insert(word)
-            word = Word("World!")
-            wordDao.insert(word)
-
-            word = Word("TODO!")
-            wordDao.insert(word)
-        }
-    }
 
 }
 

@@ -8,6 +8,7 @@ import com.example.android.learnarchitecturecomponents.room.entities.Word
  * Created by dumingwei on 2020-03-11.
  * Desc:
  */
+//构造函数中传入的是WordDao而不是整个数据库对象
 class WordRepository(private val wordDao: WordDao) {
 
     // Room 会在后台线程执行查询操作，我们可以在主线程调用查询方法。

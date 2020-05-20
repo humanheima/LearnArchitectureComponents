@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.android.learnarchitecturecomponents.R
 import com.example.android.learnarchitecturecomponents.room.entities.Word
 import kotlinx.android.synthetic.main.fragment_code_lab_room_example.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 
 /**
  * Crete by dumingwei on 2020-03-11
@@ -48,19 +50,7 @@ class CodeLabRoomExampleFragment : Fragment() {
             wordViewModel = ViewModelProvider(this,
                     ViewModelProvider.AndroidViewModelFactory(activity!!.application)
             ).get(WordViewModel::class.java)
-
-
-            wordViewModel.allWords.observe(this, Observer { words ->
-                Log.d(TAG, "onCreate: observe ${words}")
-                //数据发生变化的时候，就会回调到这里
-                words?.let {
-
-                    adapter.words = it
-                }
-            })
         }
-
-
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -75,6 +65,16 @@ class CodeLabRoomExampleFragment : Fragment() {
             recyclerView.adapter = adapter
             recyclerView.layoutManager = LinearLayoutManager(it)
         }
+
+        wordViewModel.allWords.observe(this, Observer { words ->
+            Log.d(TAG, "onCreate: observe ${words}")
+            //数据发生变化的时候，就会回调到这里
+            words?.let {
+
+                adapter.words = it
+            }
+        })
+
         fab.setOnClickListener {
             val intent = Intent(activity, NewWordActivity::class.java)
             startActivityForResult(intent, newWordActivityRequestCode)
@@ -97,6 +97,5 @@ class CodeLabRoomExampleFragment : Fragment() {
                     Toast.LENGTH_LONG).show()
         }
     }
-
 
 }
