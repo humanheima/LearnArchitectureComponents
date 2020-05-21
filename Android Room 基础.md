@@ -266,6 +266,110 @@ private fun queryWord() {
 ```
 
 
+### 增删改番外篇
+
+以插入数据举例。
+
+定义Playlist类，对应数据库中的一张表
+```
+@Entity
+class Playlist(
+    @PrimaryKey(autoGenerate = true)
+    val playlistId: Long,
+    val name: String,
+    val description: String,
+    @ColumnInfo(defaultValue = "normal")
+    val category: String,
+    @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")
+    val createdTime: String,
+    @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP")
+    val lastModifiedTime: String
+)
+```
+定义一个NameAndDescription类，注意，该类是Playlist类的子集，即NameAndDescription中有的成员变量，Playlist类中都有。
+```kotlin
+class NameAndDescription(
+    val name: String,
+    val description: String
+)
+```
+
+创建PlaylistDao类
+```kotlin
+@Dao
+interface PlaylistDao {
+
+    @Insert(entity = Playlist::class)
+    suspend fun insert(nameDescription: NameAndDescription)
+}
+```
+我们在插入数据的时候，@Insert指定了我们要插入的类是Playlist，但是我们方法中传入的参数类型是Playlist的子集。  
+那么在插入的时候相当于我们向Playlist表中只插入了部分列，其他列都是默认值。
+
+例如我们插入如下一条数据
+```kotlin
+private fun insertPlaylist() {
+    launch {
+        val nameAndDescription = NameAndDescription("dmw", "帅")
+        playlistDao.insertPartial(nameAndDescription)
+    }
+}
+```
+
+使用stetho查看数据库中的内容
+![partial insert](partial_insert_1.png)
+
+数据插入成功，name和description列都是正常的，其他列都是默认值。createdTime和lastModifiedTime 这两列注意一下竟然给我们自动转成了日期，要注意一下时间的问题避免踩坑。
+
+到这里我有个疑问，如果NameAndDescription类中存在Playlist不存在的字段会怎么样。猜想是不存在的字段会被忽略。接下来我们验证一下。
+
+修改NameAndDescription类
+```
+class NameAndDescription(
+    val name: String,
+    val description: String,
+    val age:Int
+)
+
+```
+
+插入数据
+
+```
+private fun insertPlaylist() {
+    launch {
+        val nameAndDescription = NameAndDescription("dmw", "小伙子可以", 28)
+        playlistDao.insertPartial(nameAndDescription)
+    }
+}
+```
+
+结果打脸，直接编译不过。
+```
+错误: Cannot find a column in the entity Playlist that matches with this partial entity field. 
+If you don't wish to use the field then you can annotate it with @Ignore.
+private final int age = 0;
+```
+告诉我们Playlist表中没有一列和age字段匹配。我们可以使用 @Ignore注解来忽略age字段。
+```
+class NameAndDescription(
+    val name: String,
+    val description: String,
+    @Ignore
+    val age:Int
+)
+
+```
+现在就可以了。
+
+![partial insert](partial_insert_2.png)
+
+更新和删除也有类似的功能，但是更新和删除的时候需要主键，这里就不去探索了，有兴趣的可以研究一下。
+
+
+
+
+
 
 
 
