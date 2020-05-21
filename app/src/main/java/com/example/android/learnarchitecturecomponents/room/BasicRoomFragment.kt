@@ -13,11 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import com.example.android.learnarchitecturecomponents.App
 import com.example.android.learnarchitecturecomponents.R
+import com.example.android.learnarchitecturecomponents.room.dao.PlaylistDao
 import com.example.android.learnarchitecturecomponents.room.dao.WordDao
-import com.example.android.learnarchitecturecomponents.room.entities.Address
-import com.example.android.learnarchitecturecomponents.room.entities.Fruit
-import com.example.android.learnarchitecturecomponents.room.entities.User
-import com.example.android.learnarchitecturecomponents.room.entities.Word
+import com.example.android.learnarchitecturecomponents.room.entities.*
 import kotlinx.android.synthetic.main.fragment_baisc_room.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -35,9 +33,15 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
 
     lateinit var wordDAO: WordDao
 
+    lateinit var playlistDao: PlaylistDao
+
     lateinit var allWords: LiveData<List<Word>>
 
+    lateinit var playlist: LiveData<List<Playlist>>
+
     var index = 0
+
+    var playlistId = 0L
 
     companion object {
         private const val TAG = "BasicRoomFragment"
@@ -78,6 +82,17 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
             }
             // do nothing
         })
+
+        playlistDao = WordRoomDatabase.getDatabase(context!!, this).playlistDao()
+
+        playlist = playlistDao.getList()
+
+        playlist.observe(this, Observer { list ->
+            list.forEach {
+                playlistId = it.playlistId
+                Log.d(TAG, "playList: $it")
+            }
+        })
         btn_insert.setOnClickListener(this)
         btn_delete.setOnClickListener(this)
         btn_update.setOnClickListener(this)
@@ -90,6 +105,7 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
                 insertWord()
                 //insertFruit()
                 //insertAddress()
+                insertPlaylist()
             }
             R.id.btn_query -> {
                 //query();
@@ -99,17 +115,42 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
 
             R.id.btn_update -> {
                 //update()
-                updateWord()
+                //updateWord()
+                updatePlayList()
             }
             R.id.btn_delete -> {
                 //delete()
-                deleteWord()
+                //
+                // deleteWord()
+                deletePlaylist()
             }
             else -> {
             }
         }
     }
 
+    private fun updatePlayList() {
+        var tempIndex = playlistId
+        launch {
+            val nameAndDescription = NameAndDescription(playlistId, "dmw", "小伙子可以${tempIndex}")
+            playlistDao.updatePartial(nameAndDescription)
+        }
+    }
+
+    private fun insertPlaylist() {
+        launch {
+            val nameAndDescription = NameAndDescription(index.toLong(), "dmw", "小伙子可以")
+            playlistDao.insertPartial(nameAndDescription)
+            index++
+        }
+    }
+
+    private fun deletePlaylist() {
+        launch {
+            val nameAndDescription = NameAndDescription(playlistId, "dmw", "小伙子可以")
+            playlistDao.deletePartial(nameAndDescription)
+        }
+    }
 
     private fun insertWord() {
         launch {

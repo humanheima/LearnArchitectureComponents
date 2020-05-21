@@ -6,7 +6,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.android.learnarchitecturecomponents.room.dao.PlaylistDao
 import com.example.android.learnarchitecturecomponents.room.dao.WordDao
+import com.example.android.learnarchitecturecomponents.room.entities.Playlist
 import com.example.android.learnarchitecturecomponents.room.entities.Word
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -17,10 +19,12 @@ import kotlinx.coroutines.launch
  * Desc:
  */
 
-@Database(entities = [Word::class], version = 1, exportSchema = true)
+@Database(entities = [Word::class, Playlist::class], version = 1, exportSchema = true)
 abstract class WordRoomDatabase : RoomDatabase() {
 
     abstract fun wordDao(): WordDao
+
+    abstract fun playlistDao(): PlaylistDao
 
     companion object {
 
