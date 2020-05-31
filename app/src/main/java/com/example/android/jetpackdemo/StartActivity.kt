@@ -3,6 +3,7 @@ package com.example.android.jetpackdemo
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.example.android.jetpackdemo.lifecycle.LifeCycleActivity
 import com.example.android.jetpackdemo.livedata.LiveDataActivity
 import com.example.android.jetpackdemo.room.BasicRoomFragment
 import com.example.android.jetpackdemo.room.CodeLabRoomExampleFragment
@@ -22,6 +23,9 @@ class StartActivity : AppCompatActivity() {
             }
             R.id.btnRoomCodelabs -> {
                 ExampleActivity.launch(this, CodeLabRoomExampleFragment::class.java)
+            }
+            R.id.btnLifecycle -> {
+                LifeCycleActivity.launch(this)
             }
 
         }
