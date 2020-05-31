@@ -9,5 +9,7 @@
     <string name="livedata">LiveData</string>
     <string name="basic_room_knowledge">Basic room knowledge</string>
     <string name="room_example_from_codelab">Room example from codelab</string>
+    <string name="lifeclcle">生命周期组件Lifecycle</string>
+    <string name="page">分页加载</string>
     <string name="insert">insert</string>
 </resources>

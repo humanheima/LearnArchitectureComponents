@@ -30,5 +30,22 @@
         android:text="@string/room_example_from_codelab"
         android:textAllCaps="false" />
 
+    <Button
+        android:id="@+id/btnLifecycle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:text="@string/lifeclcle"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/btnPage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:text="@string/page"
+        android:textAllCaps="false"
+        android:visibility="gone" />
+
 
 </LinearLayout>
