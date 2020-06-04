@@ -5,7 +5,7 @@
 
         <variable
             name="model"
-            type="com.example.android.learnarchitecturecomponents.livedata.NameViewModel" />
+            type="com.example.android.jetpackdemo.livedata.NameViewModel" />
     </data>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
