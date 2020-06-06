@@ -2,20 +2,22 @@
 
 在Android中，如果主线程被长时间阻塞，导致无法响应用户的操作，即造成ANR（Application Not Responding）。通常的表现是弹出一个应用无响应的对话框，让用户选择强制退出或者等待。
 
-![ANR_Dialog](ANR_Dialog.PNG)
+![ANR_Dialog.png](https://upload-images.jianshu.io/upload_images/3611193-288e9c678bcfd645.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
 
 注意：主线程做耗时操作本身是不会产生ANR的，导致ANR的根本还是应用程序无法在一定时间内响应用户的操作。因为主线程被耗时操作阻塞了，主线程无法对下一个操作进行响应才会ANR，没有需要响应的操作自然就不会产生ANR，或者应该这样说：主线程做耗时操作，非常容易引发ANR。
 
 ## ANR的类型
 
-KeyDispatch Timeout ：按键或触摸事件在特定时间内无响应。超时时间5秒。超时时间是在ActivityManagerService类中定义的。
+KeyDispatch Timeout ：按键或触摸事件在特定时间内无响应。超时时间5秒。超时时间是在`ActivityManagerService`类中定义的。
 
 ```java
 // How long we wait until we timeout on key dispatching.
 static final int KEY_DISPATCHING_TIMEOUT = 5*1000;
 ```
 
-Broadcast Timeout ：BroadcastReceiver在特定时间内无法处理完成。前台广播10秒，后台广播60秒。超时时间是在ActivityManagerService类中定义的。
+Broadcast Timeout ：BroadcastReceiver在特定时间内无法处理完成。前台广播10秒，后台广播60秒。超时时间是在`ActivityManagerService`类中定义的。
 
 ```java
 // How long we allow a receiver to run before giving up on it.
@@ -23,7 +25,7 @@ static final int BROADCAST_FG_TIMEOUT = 10*1000;
 static final int BROADCAST_BG_TIMEOUT = 60*1000;
 ```
 
-Service Timeout ：Service在特定的时间内生命周期函数无法处理完成。前台服务20秒，后台服务200秒。超时时间是在ActiveServices类中定义的。
+Service Timeout ：Service在特定的时间内生命周期函数无法处理完成。前台服务20秒，后台服务200秒。超时时间是在`ActiveServices`类中定义的。
 
 ```java
 // How long we wait for a service to finish executing.
@@ -32,7 +34,7 @@ static final int SERVICE_TIMEOUT = 20*1000;
 static final int SERVICE_BACKGROUND_TIMEOUT = SERVICE_TIMEOUT * 10;
 ```
 
-ContentProvider Timeout ：ContentProvider在特定的时间内没有完成发布。超时时间10秒。超时时间是在ActivityManagerService类中定义的。
+ContentProvider Timeout ：ContentProvider在特定的时间内没有完成发布。超时时间10秒。超时时间是在`ActivityManagerService`类中定义的。
 
 ```java
 // How long we wait for an attached process to publish its content providers
@@ -55,10 +57,10 @@ static final int CONTENT_PROVIDER_PUBLISH_TIMEOUT = 10*1000;
 
 ## ANR原因排查
 
-ANR发生以后，在Logcat中有相应的日志输出，并且会在`/data/anr/`目录下输出一个`traces.tx`文件，该文件记录了ANR的更加详细的信息，我们可以导出分析。接下来我们就依次模拟上述5中方式来制造ANR，然后分析产生的Logcat和traces.txt文件。
+ANR发生以后，在Logcat中有相应的日志输出，并且会在`/data/anr/`目录下输出一个`traces.tx`文件，该文件记录了ANR的更加详细的信息，我们可以导出分析。接下来我们就依次模拟上述5种方式来制造ANR，然后分析产生的Logcat和traces.txt文件。
 
-测试环境：
-Android Studio 3.6.1  测试手机: HUAWEI MLA-AL10，Android版本: 7.0
+测试环境：Android Studio 3.6.1  
+测试手机： HUAWEI MLA-AL10，Android版本: 7.0
 
 
 ### 1.应用在主线程上进行的计算
@@ -86,9 +88,7 @@ private fun sortBigArray() {
 ```
 //debug级别日志
 2020-06-03 21:20:24.209 com.example.android.jetpackdemo I/art: Wrote stack traces to '/data/anr/traces.txt'
-```
 
-```
 //error级别日志
 2020-06-03 21:20:28.048 ? E/ActivityManager: ANR in com.example.android.jetpackdemo (com.example.android.jetpackdemo/.StartActivity)
     PID: 15564
@@ -104,61 +104,8 @@ private fun sortBigArray() {
       0.5% 4018/com.huawei.android.launcher: 0.4% user + 0% kernel / faults: 16025 minor 3 major
       0.5% 24301/fingerprint_log: 0% user + 0.5% kernel
       0.4% 28932/com.huawei.appmarket: 0.3% user + 0% kernel / faults: 2526 minor
-      0.3% 2823/com.huawei.systemmanager:service: 0.2% user + 0% kernel / faults: 4921 minor 9 major
-      0.3% 4128/com.google.android.gms: 0.2% user + 0% kernel / faults: 12450 minor 1 major
-      0.2% 6831/kworker/u16:5: 0% user + 0.2% kernel
-      0.2% 837/imonitor: 0% user + 0.2% kernel
-      0.2% 24305/logcat: 0.1% user + 0.1% kernel
-      0.2% 24308/sleeplogcat: 0% user + 0.2% kernel
-      0.2% 6556/kworker/u16:2: 0% user + 0.2% kernel
-      0.2% 3069/com.huawei.powergenie: 0.1% user + 0% kernel / faults: 440 minor 1 major
-      0.1% 344/cfinteractive: 0% user + 0.1% kernel
-      0.1% 26895/kworker/4:2: 0% user + 0.1% kernel
-      0.1% 624/mm-pp-dpps: 0% user + 0% kernel
-      0.1% 12531/kworker/u16:7: 0% user + 0.1% kernel
-      0.1% 26585/com.huawei.systemmanager: 0% user + 0% kernel / faults: 1777 minor
-      0.1% 603/servicemanager: 0% user + 0% kernel
-      0% 8339/kworker/2:1: 0% user + 0% kernel
-      0% 27839/wpa_supplicant: 0% user + 0% kernel / faults: 1 minor
-      0% 24394/com.huawei.hwid.core: 0% user + 0% kernel / faults: 1649 minor
-      0% 5382/mdss_fb0: 0% user + 0% kernel
-      0% 27503/kworker/3:0: 0% user + 0% kernel
-      0% 602/powerlogd: 0% user + 0% kernel / faults: 2 minor
-      0% 1065/com.huawei.health:DaemonService: 0% user + 0% kernel / faults: 463 minor
-      0% 10/rcuop/0: 0% user + 0% kernel
-      0% 350/mmc-cmdqd/0: 0% user + 0% kernel
-      0% 25/rcuop/2: 0% user + 0% kernel
-      0% 7/rcu_preempt: 0% user + 0% kernel
-      0% 13774/com.google.android.gms.persistent: 0% user + 0% kernel / faults: 152 minor
-      0% 28567/kworker/1:0: 0% user + 0% kernel
-      0% 2847/com.android.phone: 0% user + 0% kernel / faults: 48 minor
-      0% 810/cnss_diag: 0% user + 0% kernel
-      0% 27829/VosMCThread: 0% user + 0% kernel
-      0% 18/rcuop/1: 0% user + 0% kernel
-      0% 7721/kworker/u16:0: 0% user + 0% kernel
-      0% 7903/com.huawei.hwid.container1: 0% user + 0% kernel / faults: 759 minor
-      0% 32/rcuop/3: 0% user + 0% kernel
-      0% 3874/irq/181-408000.: 0% user + 0% kernel
-      0% 29193/com.huawei.imonitor: 0% user + 0% kernel / faults: 245 minor
-      0% 20298/com.tencent.mm: 0% user + 0% kernel / faults: 215 minor
-      0% 24304/chargelogcat: 0% user + 0% kernel
-      0% 24306/logcat: 0% user + 0% kernel
-      0% 3/ksoftirqd/0: 0% user + 0% kernel
-      0% 39/rcuop/4: 0% user + 0% kernel
-      0% 8322/com.android.mms: 0% user + 0% kernel / faults: 178 minor
-      0% 5385/irq/72-synaptic: 0% user + 0% kernel
-      0% 27830/VosTXThread: 0% user + 0% kernel
-      0% 821/thermal-daemon: 0% user + 0% kernel / faults: 1 minor
-      0% 835/netd: 0% user + 0% kernel / faults: 168 minor
-      0% 1027/rild: 0% user + 0% kernel / faults: 90 minor
-      0% 16340/com.huawei.hwid.container3: 0% user + 0% kernel / faults: 181 minor
-      0% 18948/com.android.printspooler: 0% user + 0% kernel / faults: 142 minor
-      0% 608/lmkd: 0% user + 0% kernel
-      0% 855/dts_hpx_service: 0% user + 0% kernel
-      0% 6313/com.huawei.android.pushagent.PushService: 0% user + 0% kernel / faults: 206 minor
-      0% 27831/VosRXThread: 0% user + 0% kernel
-      0% 29/ksoftir
-2020-06-03 21:20:28.048 ? E/ActivityManager: CPU usage from 1721ms to 2250ms later (2020-06-03 21:20:25.860 to 2020-06-03 21:20:26.389):
+     //...
+   2020-06-03 21:20:28.048 ? E/ActivityManager: CPU usage from 1721ms to 2250ms later (2020-06-03 21:20:25.860 to 2020-06-03 21:20:26.389):
       99% 15564/com.example.android.jetpackdemo: 97% user + 1.8% kernel / faults: 37 minor
         99% 15564/oid.jetpackdemo: 99% user + 0% kernel
       7.5% 2001/system_server: 3.7% user + 3.7% kernel / faults: 5 minor
@@ -180,14 +127,14 @@ private fun sortBigArray() {
 com.example.android.jetpackdemo I/dalvikvm: Wrote stack traces to '/data/anr/traces.txt'
 ```
 
-ANR发生所在的包名信息，所在的类和ANR的类型
+发生ANR进程的包名信息，所在的类，进程id和ANR的类型
 
 ```
 2020-06-03 21:20:28.048 ? E/ActivityManager: ANR in com.example.android.jetpackdemo (com.example.android.jetpackdemo/.StartActivity)
     PID: 15564
     Reason: Input dispatching timed out (Waiting to send key event because the focused window has not finished processing all of the input events that were previously delivered to it.  Outbound queue length: 0.  Wait queue length: 2.)  
 ```
-我们可以看到ANR发生的类是`com.example.android.jetpackdemo.StartActivity`，进程号是`PID: 15564`，ANR的类型是`Input dispatching timed out`。
+包名`com.example.android.jetpackdemo`，具体的类`com.example.android.jetpackdemo.StartActivity`，进程号是`PID: 15564`，ANR的类型是`Input dispatching timed out`。
 
 ```
  CPU usage from 294322ms to 0ms ago (2020-06-03 21:15:29.817 to 2020-06-03 21:20:24.139):
@@ -207,7 +154,7 @@ ANR发生所在的包名信息，所在的类和ANR的类型
 //...
 ```
 
-这两段CPU 使用信息分别代表ANR发生前和ANR时的CPU占用率，在输出的CPU使用信息中我们也可以看出一些端倪，我们注意到我们的进程CPU的使用率比较高，说明我们的进程比较忙碌，这里需要说明一下，进程忙碌并不一定代表主线程忙碌，也可能是进程中的后台线程忙碌。
+这两段CPU 信息分别代表ANR发生前和ANR时的CPU占用率，在输出的CPU使用信息中我们也可以看出一些端倪，我们注意到我们的进程CPU的占用率比较高，说明我们的进程比较忙碌，这里需要说明一下，进程忙碌并不一定代表主线程忙碌，也可能是进程中的后台线程忙碌。
 
 但是现在我们虽然知道了ANR发生的所在的类，但是如何精确定位到具体的哪一行代码呢？这就需要分析发生ANR的时候保存的traces.txt文件了。
 
@@ -236,7 +183,6 @@ ABI: 'arm64'
 
 
 ```
-
 "main" prio=5 tid=1 Runnable
   | group="main" sCount=0 dsCount=0 obj=0x77d21af8 self=0x7fa2ea2a00
   | sysTid=15564 nice=-10 cgrp=default sched=0/0 handle=0x7fa6f4ba98
@@ -258,13 +204,11 @@ ABI: 'arm64'
   at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:942)
   at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:832)
 //...
-
 ```
 
-我们首先看一下和线程相关的一些信息。
+我们首先看一下和线程相关的部分信息。
 
 ```
-
 "main" prio=5 tid=1 Runnable
   | group="main" sCount=0 dsCount=0 obj=0x77d21af8 self=0x7fa2ea2a00
   | sysTid=15564 nice=-10 cgrp=default sched=0/0 handle=0x7fa6f4ba98
@@ -273,11 +217,11 @@ ABI: 'arm64'
   | held mutexes= "mutator lock"(shared held)
 ```
 
-线程基本信息：
+**线程基本信息：**
 
 * 线程名：main
 
-* 线程优先级：prio=5，优先级取值范围[1,10]，详见Thread类：
+* 线程优先级：prio=5，优先级取值范围[1,10]，详见`Thread`类：
 
 ```
 //最小取值
@@ -289,9 +233,9 @@ public final static int MAX_PRIORITY = 10;
 ```
 
 * 线程id： tid=1，1代表主线程
-* 线程状态：Runnable，状态取值如下，详见Thread.State枚举类：
+* 线程状态：Runnable，状态取值如下，详见`Thread.State`枚举类：
 
-```
+```java
 NEW, //线程还没启动
 
 RUNNABLE, //正在执行
@@ -311,7 +255,7 @@ TERMINATED //执行完毕
 * 线程的java的对象地址：obj= 0x77d21af8
 * 线程本身的Native对象地址：self= 0x7fa2ea2a00
 
-线程调度信息：
+**线程调度信息：**
 
 * Linux系统中内核线程id: sysTid= 15564 与进程号相同
 * 线程调度优先级：nice=-10，详细信息可参考 [浅析Linux线程调度](https://www.cnblogs.com/wanghuaijun/p/7954029.html)
@@ -319,21 +263,14 @@ TERMINATED //执行完毕
 * 线程调度策略和优先级：sched=0/0
 * 线程处理函数地址：handle= 0x7fa6f4ba98
 
-线程的上下文信息：
-
-* 线程调度状态：state=S
-* 线程在CPU中的执行时间、线程等待时间、线程执行的时间片长度：schedstat=( 22116939220 18299419 428 )
-* 线程在用户态中的调度时间值：utm= 2209
-* 线程在内核态中的调度时间值：stm=2
-* 最后执行这个线程的CPU核序号：core=5
-
-线程的堆栈信息：
+**线程的堆栈信息：**
 
 * 堆栈地址和大小：stack=0x7fd42e0000-0x7fd42e2000 stackSize=8MB
 
 
-线程锁状态： 
-* held mutexes= "mutator lock"(shared held)，这里是以共享的方式持有锁。
+**held mutexes：** 
+
+* held mutexes 到底是什么意思我没有找到官方的文档解释，网上大多数关于held mutexes的解释也都是一笔带过没有实际参考意义，我们这里先忽略这个东西，并不会影响我们排查问题。
 
 
 从上面traces.txt文件中这段信息可以看出，导致ANR的最终原因是在BubbleSort.java的第45行。
@@ -343,19 +280,17 @@ TERMINATED //执行完毕
  at com.example.android.jetpackdemo.StartActivity.sortBigArray(StartActivity.kt:76)
  at com.example.android.jetpackdemo.StartActivity.onClick(StartActivity.kt:47)
  at java.lang.reflect.Method.invoke!(Native method)
-
 ```
 
 ![anr_1.png](https://upload-images.jianshu.io/upload_images/3611193-a660fdd3224178a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
-### 应用在主线程上执行耗时的I/O的操作
+### 2.应用在主线程上执行耗时的I/O的操作
 
-注意读写权限的问题
 
 ```kotlin
 /**
- * 拷贝文件，主要要有读写权限
+ * 拷贝文件，注意要有读写权限
  */
 private fun doIo() {
     val prePath = Environment.getExternalStorageDirectory().path
@@ -380,6 +315,8 @@ private fun doIo() {
     }
 }
 ```
+
+调用doIo()方法以后，多次点击返回键，制造ANR。
     
 Logcat日志输出
 
@@ -395,61 +332,7 @@ Logcat日志输出
       2% 412/msm-core:sampli: 0% user + 2% kernel
       1.7% 24463/com.huawei.hwid.persistent: 1.5% user + 0.1% kernel / faults: 3317 minor 1 major
       1.5% 607/surfaceflinger: 1% user + 0.5% kernel / faults: 24 minor
-      1.4% 508/logd: 0.6% user + 0.7% kernel / faults: 32 minor
-      1% 339/irq/171-tsens_i: 0% user + 1% kernel
-      1% 2823/com.huawei.systemmanager:service: 0.8% user + 0.1% kernel / faults: 4694 minor
-      0.8% 4018/com.huawei.android.launcher: 0.7% user + 0% kernel / faults: 15560 minor 1 major
-      0.8% 4128/com.google.android.gms: 0.6% user + 0.1% kernel / faults: 8227 minor 1 major
-      0.5% 24301/fingerprint_log: 0% user + 0.5% kernel
-      0.4% 13774/com.google.android.gms.persistent: 0.3% user + 0% kernel / faults: 421 minor 6 major
-      0.1% 4409/android.process.media: 0.1% user + 0% kernel / faults: 595 minor 1 major
-      0.4% 24305/logcat: 0.1% user + 0.3% kernel
-      0.3% 14246/kworker/u16:5: 0% user + 0.3% kernel
-      0.3% 3069/com.huawei.powergenie: 0.1% user + 0.1% kernel / faults: 278 minor 4 major
-      0.2% 2485/kworker/u16:0: 0% user + 0.2% kernel
-      0.2% 624/mm-pp-dpps: 0.1% user + 0.1% kernel
-      0.2% 837/imonitor: 0% user + 0.2% kernel / faults: 1 minor
-      0.2% 13134/com.android.settings: 0.1% user + 0% kernel / faults: 3428 minor
-      0.2% 24308/sleeplogcat: 0% user + 0.1% kernel
-      0.1% 26585/com.huawei.systemmanager: 0.1% user + 0% kernel / faults: 405 minor
-      0.1% 13976/kworker/0:3: 0% user + 0.1% kernel
-      0.1% 15193/kworker/4:0: 0% user + 0.1% kernel
-      0.1% 603/servicemanager: 0% user + 0% kernel
-      0.1% 11851/mdss_fb0: 0% user + 0.1% kernel
-      0.1% 350/mmc-cmdqd/0: 0% user + 0.1% kernel
-      0.1% 602/powerlogd: 0.1% user + 0% kernel / faults: 1 minor
-      0.1% 1065/com.huawei.health:DaemonService: 0% user + 0% kernel / faults: 417 minor
-      0.1% 11526/kworker/u16:2: 0% user + 0.1% kernel
-      0% 14765/kworker/3:2: 0% user + 0% kernel
-      0% 24394/com.huawei.hwid.core: 0% user + 0% kernel / faults: 263 minor
-      0.1% 344/cfinteractive: 0% user + 0.1% kernel
-      0.1% 27830/VosTXThread: 0% user + 0.1% kernel
-      0.1% 3/ksoftirqd/0: 0% user + 0.1% kernel
-      0% 835/netd: 0% user + 0% kernel / faults: 320 minor
-      0.1% 2282/com.huawei.android.pushagent: 0% user + 0% kernel / faults: 296 minor
-      0.1% 27839/wpa_supplicant: 0% user + 0% kernel
-      0.1% 29193/com.huawei.imonitor: 0% user + 0% kernel / faults: 645 minor
-      0% 822/hwpged: 0% user + 0% kernel
-      0% 2847/com.android.phone: 0% user + 0% kernel / faults: 5 minor
-      0% 12579/com.android.vending: 0% user + 0% kernel / faults: 192 minor
-      0% 14930/kworker/2:3: 0% user + 0% kernel
-      0% 7/rcu_preempt: 0% user + 0% kernel
-      0% 3752/com.huawei.android.totemweather: 0% user + 0% kernel / faults: 429 minor
-      0% 10/rcuop/0: 0% user + 0% kernel
-      0% 608/lmkd: 0% user + 0% kernel
-      0% 27831/VosRXThread: 0% user + 0% kernel
-      0% 31131/com.huawei.hwid.container1: 0% user + 0% kernel / faults: 694 minor
-      0% 25/rcuop/2: 0% user + 0% kernel
-      0% 9404/kworker/1:0: 0% user + 0% kernel
-      0% 24303/kmsgcat: 0% user + 0% kernel
-      0% 810/cnss_diag: 0% user + 0% kernel
-      0% 943/com.android.mms: 0% user + 0% kernel / faults: 46 minor
-      0% 3874/irq/181-408000.: 0% user + 0% kernel
-      0% 27829/VosMCThread: 0% user + 0% kernel
-      0% 1//init: 0% user + 0% kernel / faults: 52 minor
-      0% 112/system: 0% user + 0% kernel
-      0% 815/hvdcp_opti: 0% user + 0% kernel
-      0% 833/mediaserver: 0% user + 0% kernel / faults:
+     //...    
 2020-06-04 21:05:24.462 ? E/ActivityManager: CPU usage from 1696ms to 2226ms later (2020-06-04 21:05:22.222 to 2020-06-04 21:05:22.752):
       84% 16295/com.example.android.jetpackdemo: 84% user + 0% kernel / faults: 562 minor 1 major
         68% 16295/oid.jetpackdemo: 68% user + 0% kernel
@@ -473,7 +356,7 @@ Logcat日志输出
     15% TOTAL: 13% user + 1.8% kernel
 ```
 
-从上面的日志信息中我们也看出来发生ANR的时候，我们的进程CPU占用率是比较高的，说明我们进程内存在比较忙碌的线程。然后我们继续看一下对应的traces.txt文件。
+从上面的日志信息中我们也看出来发生ANR的时候，我们的进程`com.example.android.jetpackdemo`CPU占用率是比较高的，说明我们进程内存在比较忙碌的线程。然后我们继续看一下对应的traces.txt文件。
 
 **traces.txt部分信息**
 
@@ -524,22 +407,25 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
   at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:832)
 ```
 
-关键信息
+我们重点看一下这段信息
 
 ```
 at java.io.OutputStreamWriter.write(OutputStreamWriter.java:194)
 at com.example.android.jetpackdemo.StartActivity.doIo(StartActivity.kt:116)
 at com.example.android.jetpackdemo.StartActivity.onClick(StartActivity.kt:65)
 ```
-从上面traces.txt文件中这段信息可以看出，导致ANR的最终原因是在OutputStreamWriter.java的第194行。而我们的代码出问题的地方是StartActivity.kt的116行。
 
-![OutputStreamWriter_194](OutputStreamWriter_194.png)
+从上面这段信息可以看出，导致ANR的最终原因是在OutputStreamWriter.java的第194行。而我们的代码出问题的地方是StartActivity.kt的116行。
 
-![StartActivity_116](StartActivity_116.png)
+![OutputStreamWriter_194.png](https://upload-images.jianshu.io/upload_images/3611193-8ff82e7a70865623.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![StartActivity_116.png](https://upload-images.jianshu.io/upload_images/3611193-f14c3e0a30f5567f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-### 主线程处于阻塞状态，等待获取锁
+### 3.主线程处于阻塞状态，等待获取锁
 
 ```
+//锁资源
+val lockedResource: Any = Any()
+
 fun onClick(v: View) {
     when (v.id) {
         R.id.btnWaitLockedResource -> {
@@ -555,7 +441,26 @@ fun onClick(v: View) {
         }
     }
 }
+
+
+//LockTask后台线程
+inner class LockTask : AsyncTask<MutableList<Int>, Int, Unit>() {
+    override fun doInBackground(vararg params: MutableList<Int>) =
+        synchronized(lockedResource) {
+            val list = params[0]
+            for (i in 0 until 1000000) {
+                list.add((Math.random() * 10000000).toInt())
+            }
+            list.forEach {
+                Log.d(TAG, "doInBackground: for each element is $it")
+            }
+        }
+}
+
 ```
+
+调用onClick()方法以后，先让后台线程获取锁，然后主线程再尝试获取锁。然后多次点击返回键，制造ANR。
+
 
 **Logcat日志输出**
 
@@ -577,60 +482,8 @@ fun onClick(v: View) {
       0.3% 15363/kworker/u16:10: 0% user + 0.3% kernel
       0.2% 6831/kworker/u16:5: 0% user + 0.2% kernel
       0.2% 837/imonitor: 0% user + 0.1% kernel
-      0.2% 624/mm-pp-dpps: 0% user + 0.1% kernel
-      0.2% 24308/sleeplogcat: 0% user + 0.2% kernel
-      0.2% 3069/com.huawei.powergenie: 0.1% user + 0% kernel / faults: 97 minor
-      0.2% 16110/kworker/4:0: 0% user + 0.2% kernel
-      0.1% 18971/kworker/0:2: 0% user + 0.1% kernel
-      0.1% 19095/mdss_fb0: 0% user + 0.1% kernel
-      0.1% 27830/VosTXThread: 0% user + 0.1% kernel
-      0.1% 19160/kworker/u16:2: 0% user + 0.1% kernel
-      0.1% 344/cfinteractive: 0% user + 0.1% kernel
-      0.1% 350/mmc-cmdqd/0: 0% user + 0.1% kernel
-      0.1% 602/powerlogd: 0.1% user + 0% kernel
-      0.1% 4409/android.process.media: 0% user + 0% kernel / faults: 1034 minor 4 major
-      0.1% 603/servicemanager: 0% user + 0% kernel
-      0.1% 835/netd: 0% user + 0% kernel / faults: 341 minor
-      0% 7/rcu_preempt: 0% user + 0% kernel
-      0% 2823/com.huawei.systemmanager:service: 0% user + 0% kernel / faults: 120 minor
-      0% 27831/VosRXThread: 0% user + 0% kernel
-      0% 27839/wpa_supplicant: 0% user + 0% kernel
-      0% 10/rcuop/0: 0% user + 0% kernel
-      0% 25/rcuop/2: 0% user + 0% kernel
-      0% 1065/com.huawei.health:DaemonService: 0% user + 0% kernel / faults: 70 minor
-      0% 2847/com.android.phone: 0% user + 0% kernel / faults: 147 minor
-      0% 3844/com.google.android.ext.services: 0% user + 0% kernel / faults: 1206 minor
-      0% 4128/com.google.android.gms: 0% user + 0% kernel / faults: 134 minor
-      0% 18974/kworker/u16:0: 0% user + 0% kernel
-      0% 1//init: 0% user + 0% kernel / faults: 56 minor
-      0% 15378/kworker/2:3: 0% user + 0% kernel
-      0% 19403/kworker/u16:6: 0% user + 0% kernel
-      0% 19668/kworker/1:4: 0% user + 0% kernel
-      0% 24303/kmsgcat: 0% user + 0% kernel
-      0% 112/system: 0% user + 0% kernel
-      0% 3874/irq/181-408000.: 0% user + 0% kernel
-      0% 13774/com.google.android.gms.persistent: 0% user + 0% kernel / faults: 6 minor
-      0% 20298/com.tencent.mm: 0% user + 0% kernel / faults: 317 minor
-      0% 27829/VosMCThread: 0% user + 0% kernel
-      0% 29193/com.huawei.imonitor: 0% user + 0% kernel / faults: 188 minor
-      0% 3/ksoftirqd/0: 0% user + 0% kernel
-      0% 588/healthd: 0% user + 0% kernel
-      0% 810/cnss_diag: 0% user + 0% kernel
-      0% 815/hvdcp_opti: 0% user + 0% kernel
-      0% 822/hwpged: 0% user + 0% kernel / faults: 1 minor
-      0% 833/mediaserver: 0% user + 0% kernel / faults: 36 minor
-      0% 1482/com.android.gallery3d: 0% user + 0% kernel / faults: 226 minor
-      0% 4018/com.huawei.android.launcher: 0% user + 0% kernel / faults: 385 minor
-      0% 15313/kworker/3:2: 0% user + 0% kernel
-      0% 17461/com.huawei.hidisk: 0% user + 0% kernel / faults: 26 minor
-      0% 18601/com.android.mms: 0% user + 0% kernel / faults: 53 minor
-      0% 19097/irq/72-synaptic: 0% user + 0% kernel
-      0% 19628/com.huawei.vdrive: 0% user + 0% kernel / faults: 36 minor
-      0% 24304/chargelogcat: 0% user + 0% kernel
-      0% 24306/logcat: 0% user + 0% kernel
-      0% 18/rcuop/1: 0% user + 0% kernel
-      0% 32/rcuop
-2020-06-04 09:55:04.396 ? E/ActivityManager: CPU usage from 2211ms to 2742ms later (2020-06-04 09:55:02.206 to 2020-06-04 09:55:02.737):
+      //...
+     2020-06-04 09:55:04.396 ? E/ActivityManager: CPU usage from 2211ms to 2742ms later (2020-06-04 09:55:02.206 to 2020-06-04 09:55:02.737):
       105% 20008/com.example.android.jetpackdemo: 92% user + 13% kernel / faults: 220 minor
         99% 20096/AsyncTask #1: 86% user + 13% kernel
         5.6% 20019/HeapTaskDaemon: 5.6% user + 0% kernel
@@ -695,18 +548,16 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
   at java.lang.reflect.Method.invoke!(Native method)
   at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:942)
   at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:832)
-
 ```
 
-我们重点看一下这段信息
+关键信息
 
 ```
-held mutexes=
-  at com.example.android.jetpackdemo.StartActivity.onClick(StartActivity.kt:61)
-  - waiting to lock <0x0f8c80b0> (a java.lang.Object) held by thread 16
+at com.example.android.jetpackdemo.StartActivity.onClick(StartActivity.kt:61)
+- waiting to lock <0x0f8c80b0> (a java.lang.Object) held by thread 16
 ```
 
-在StartActivity.kt的61行，在等待一个锁对象`<0x0f8c80b0>`，该对象是一个`Object`对象(a java.lang.Object)，这个锁对象正在被线程id为16的线程持有。那么我们下面在traces.txt文件中搜索一下这个锁对象`<0x0f8c80b0>`。如下所示：
+在StartActivity的61行，在等待一个锁对象`<0x0f8c80b0>`，该对象是一个`Object`对象(a java.lang.Object)，这个锁对象正在被线程id为16的线程持有。那么我们下面在traces.txt文件中搜索一下这个锁对象`<0x0f8c80b0>`。如下所示：
 
 ```
 DALVIK THREADS (16):
@@ -730,26 +581,25 @@ DALVIK THREADS (16):
   at java.lang.Thread.run(Thread.java:776)
 ```
 
-重点信息
+关键信息
 
 ```
  at com.example.android.jetpackdemo.StartActivity$LockTask.doInBackground(StartActivity.kt:107)
-  - locked <0x0f8c80b0> (a java.lang.Object)
+ - locked <0x0f8c80b0> (a java.lang.Object)
 ```
 
-我们看到正是这个AsyncTask在107行持有锁对象`0x0f8c80b0 `，导致主线程无法获取锁而阻塞。
+我们看到正是这个AsyncTask在107行持有锁对象`0x0f8c80b0 `，导致主线程无法获取锁而阻塞，最终导致ANR。
 
-![AsyncTaskHeldLock](AsyncTaskHeldLock.png)
+![AsyncTaskHeldLock.png](https://upload-images.jianshu.io/upload_images/3611193-dafe2468abe5e32e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-
-### 主线程与其他线程之间发生死锁
+### 4.主线程与其他线程之间发生死锁
 
 ```
-
 val resourceFirst = "resourceFirst"
 val resourceSecond = "resourceSecond"
 
 private fun mockDeadLock() {
+    //启动一个后台线程
     thread(start = false) {
         synchronized(resourceSecond) {
             Log.d(TAG, "工作线程获取了锁 resourceSecond")
@@ -780,13 +630,14 @@ private fun mockDeadLock() {
 }
 ```
 
-上面这段代码：
+上面这段代码逻辑：
 
 1. 工作线程先获取锁`resourceSecond`，然后睡眠100ms保证主线程能获取到锁`resourceFirst`。
 2. 主线程睡眠30秒后先获取锁`resourceFirst`，然后再尝试获取锁`resourceSecond`，这时候是获取不到的，因为工作线程已经持有锁`resourceSecond`并且不释放。
 3. 工作线程睡眠结束以后尝试获取锁`resourceFirst`，这时候是获取不到的，因为主线程持有了锁`resourceFirst`并且不释放。
 4. 最终，造成死锁。
 
+调用mockDeadLock()方法以后，多次点击返回键，制造ANR。
 
 **Logcat输出**
 
@@ -802,55 +653,7 @@ private fun mockDeadLock() {
       1.8% 607/surfaceflinger: 1.1% user + 0.7% kernel / faults: 82 minor 1 major
       0% 24463/com.huawei.hwid.persistent: 0% user + 0% kernel / faults: 7819 minor 24 major
       0.9% 2823/com.huawei.systemmanager:service: 0.6% user + 0.2% kernel / faults: 13277 minor 12 major
-      0.2% 4128/com.google.android.gms: 0.1% user + 0% kernel / faults: 17219 minor 4 major
-      0.7% 28932/com.huawei.appmarket: 0.6% user + 0% kernel / faults: 4623 minor 21 major
-      0.3% 13774/com.google.android.gms.persistent: 0.2% user + 0.1% kernel / faults: 2249 minor 6 major
-      0.3% 5951/com.ximalaya.ting.lite:player: 0.2% user + 0% kernel / faults: 10705 minor 11 major
-      0.5% 29193/com.huawei.imonitor: 0.3% user + 0.1% kernel / faults: 1608 minor 2 major
-      0.5% 24308/sleeplogcat: 0.2% user + 0.2% kernel / faults: 79 minor
-      0.5% 24305/logcat: 0.2% user + 0.2% kernel
-      0% 600/teecd: 0% user + 0% kernel / faults: 15295 minor
-      0.2% 4018/com.huawei.android.launcher: 0.1% user + 0% kernel / faults: 16903 minor 24 major
-      0.3% 837/imonitor: 0% user + 0.2% kernel / faults: 647 minor 3 major
-      0.1% 11693/kworker/u16:2: 0% user + 0.1% kernel
-      0.2% 949/audioserver: 0.2% user + 0% kernel / faults: 393 minor 2 major
-      0.2% 3069/com.huawei.powergenie: 0.1% user + 0.1% kernel / faults: 328 minor
-      0% 624/mm-pp-dpps: 0% user + 0% kernel
-      0.2% 603/servicemanager: 0.1% user + 0.1% kernel
-      0.1% 602/powerlogd: 0% user + 0% kernel / faults: 1 minor
-      0.2% 350/mmc-cmdqd/0: 0% user + 0.2% kernel
-      0.1% 2847/com.android.phone: 0.1% user + 0% kernel / faults: 472 minor
-      0.1% 10480/kworker/u16:4: 0% user + 0.1% kernel
-      0% 26585/com.huawei.systemmanager: 0% user + 0% kernel / faults: 4066 minor 8 major
-      0.1% 11347/kworker/u16:5: 0% user + 0.1% kernel
-      0.1% 1065/com.huawei.health:DaemonService: 0% user + 0% kernel / faults: 711 minor
-      0% 3752/com.huawei.android.totemweather: 0% user + 0% kernel / faults: 2059 minor
-      0.1% 24394/com.huawei.hwid.core: 0.1% user + 0% kernel / faults: 831 minor 14 major
-      0% 835/netd: 0% user + 0% kernel / faults: 1269 minor
-      0.1% 27830/VosTXThread: 0% user + 0.1% kernel
-      0.1% 27839/wpa_supplicant: 0% user + 0% kernel / faults: 1 minor
-      0% 3462/com.huawei.hwid.container1: 0% user + 0% kernel / faults: 2129 minor 1 major
-      0% 2282/com.huawei.android.pushagent: 0% user + 0% kernel / faults: 687 minor
-      0% 16763/com.google.android.gms.unstable: 0% user + 0% kernel / faults: 5559 minor
-      0% 7/rcu_preempt: 0% user + 0% kernel
-      0% 344/cfinteractive: 0% user + 0% kernel
-      0% 822/hwpged: 0% user + 0% kernel / faults: 17 minor
-      0% 11153/kworker/0:1: 0% user + 0% kernel
-      0% 25/rcuop/2: 0% user + 0% kernel
-      0% 27829/VosMCThread: 0% user + 0% kernel
-      0% 27831/VosRXThread: 0% user + 0% kernel
-      0% 10/rcuop/0: 0% user + 0% kernel
-      0% 810/cnss_diag: 0% user + 0% kernel / faults: 1 minor
-      0% 3844/com.google.android.ext.services: 0% user + 0% kernel / faults: 402 minor
-      0% 6313/com.huawei.android.pushagent.PushService: 0% user + 0% kernel / faults: 285 minor 1 major
-      0% 608/lmkd: 0% user + 0% kernel
-      0% 25941/com.huawei.intelligent: 0% user + 0% kernel / faults: 1227 minor
-      0% 12047/kworker/u16:0: 0% user + 0% kernel
-      0% 12313/kworker/1:2: 0% user + 0% kernel
-      0% 112/system: 0% user + 0% kernel
-      0% 3/ksoftirqd/0: 0% user + 0% kernel
-      0% 18028/com.huawei.hwid.container3: 0% user + 0% kernel / faults: 204 minor
-      0% 24307/logcat: 0% user + 0% k
+    //...      
 2020-06-04 15:07:41.246 ? E/ActivityManager: CPU usage from 1714ms to 2243ms later (2020-06-04 15:07:38.994 to 2020-06-04 15:07:39.523):
       12% 2001/system_server: 9% user + 3.6% kernel / faults: 8 minor
         10% 2014/ActivityManager: 5.4% user + 5.4% kernel
@@ -859,7 +662,7 @@ private fun mockDeadLock() {
     2.3% TOTAL: 1.1% user + 1.1% kernel
 ```
 
-上面的Logcat输出并没有关于我们进程的信息，说明我们的进程CPU占用率很低。那么我们继续看一下traces.txt文件。
+上面的Logcat输出并没有关于我们进程的CUP信息，说明我们的进程CPU占用率很低。那么我们继续看一下traces.txt文件。
 
 **traces.txt部分信息**
 
@@ -868,6 +671,8 @@ private fun mockDeadLock() {
 Cmd line: com.example.android.jetpackdemo
 Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/release-keys'
 ```
+
+通过进程号pid 13626搜索
 
 ```
 
@@ -895,7 +700,6 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
 
 主线程状态是线程状态是Blocked，说明正在等待获取锁对象，等待获取的锁对象`<0x0a43b5c8>`是一个String对象(a java.lang.String)，该对象被线程id为17的线程持有。然后我们搜索这个锁对象。
 
-
 ```
 "Thread-2" prio=5 tid=17 Blocked
   | group="main" sCount=1 dsCount=0 obj=0x12c89dc0 self=0x7f931cd000
@@ -911,25 +715,24 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
 
 ```
 
-Thread-2，线程状态是Blocked，Blocked，说明正在等待获取锁对象，等待获取的锁对象`<0x0ec26674>`是一个String对象(a java.lang.String)，这个对象被线程id为1的线程（也就是主线程）持有。并且当前线程持有锁对象`<0x0a43b5c8>`。
+Thread-2，线程状态是Blocked，说明正在等待获取锁对象，等待获取的锁对象`<0x0ec26674>`是一个String对象(a java.lang.String)，这个对象被线程id为1的线程（也就是主线程）持有。并且当前线程持有锁对象`<0x0a43b5c8>`。
 
 最终，主线程和工作线程Thread-2造成死锁，导致应用无响应。
 
+### 5.主线程在对另一个进程进行同步Binder调用，而后者需要很长时间才能返回
 
-### 主线程在对另一个进程进行同步binder调用，而后者需要很长时间才能返回
-
-我们的代码是实现从客户端的两个EditText中获取两个数字，然后通过Binder，调用服务端的方法计算两个数的和返回给客户端，然后客户端讲计算结果展示在界面上。完整代码请参考 [AIDLDemo](https://github.com/humanheima/AIDLDemo/blob/master/aidlclient/src/main/java/com/hm/aidlclient/BaseKnowledgeActivity.java)。
+我们的代码是实现从客户端的两个EditText中获取两个数字，然后通过Binder调用服务端的方法计算两个数的和返回给客户端，然后客户端讲计算结果展示在界面上。完整代码请参考 [AIDLDemo](https://github.com/humanheima/AIDLDemo/blob/master/aidlclient/src/main/java/com/hm/aidlclient/BaseKnowledgeActivity.java)。
 
 客户端部分代码
 
-```
+```java
 private IMyAidlInterface iMyAidlInterface;
     
 private ServiceConnection conn = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
          //获取Binder对象
-         MyAidlInterface = IMyAidlInterface.Stub.asInterface(service);
+         iMyAidlInterface = IMyAidlInterface.Stub.asInterface(service);
     }
     //...
 };
@@ -984,6 +787,9 @@ public class IRemoteService extends Service {
     }
 }
 ```
+
+注意：我们需要先把Binder服务端运行起来，然后再运行Binder客户端执行相应的方法。
+
 **Logcat输出**
 
 ```
@@ -1001,56 +807,7 @@ public class IRemoteService extends Service {
       0.4% 24463/com.huawei.hwid.persistent: 0.3% user + 0% kernel / faults: 11607 minor 6 major
       0.5% 24301/fingerprint_log: 0% user + 0.5% kernel
       0.3% 4128/com.google.android.gms: 0.2% user + 0% kernel / faults: 26970 minor 16 major
-      0.3% 4018/com.huawei.android.launcher: 0.2% user + 0% kernel / faults: 37523 minor 24 major
-      0.3% 2823/com.huawei.systemmanager:service: 0.2% user + 0.1% kernel / faults: 11778 minor 12 major
-      0.3% 837/imonitor: 0% user + 0.2% kernel / faults: 3 minor
-      0% 13651/kworker/5:2: 0% user + 0% kernel
-      0.2% 15382/kworker/u16:4: 0% user + 0.2% kernel
-      0.2% 24305/logcat: 0.1% user + 0.1% kernel
-      0.2% 11693/kworker/u16:2: 0% user + 0.2% kernel
-      0.2% 24308/sleeplogcat: 0% user + 0.2% kernel
-      0.2% 3069/com.huawei.powergenie: 0.1% user + 0% kernel / faults: 2034 minor 8 major
-      0.1% 15983/kworker/u16:5: 0% user + 0.1% kernel
-      0.1% 350/mmc-cmdqd/0: 0% user + 0.1% kernel
-      0% 5390/com.baidu.input_huawei: 0% user + 0% kernel / faults: 8347 minor 248 major
-      0.1% 13774/com.google.android.gms.persistent: 0% user + 0% kernel / faults: 892 minor 11 major
-      0.1% 27839/wpa_supplicant: 0% user + 0% kernel
-      0.1% 624/mm-pp-dpps: 0% user + 0% kernel
-      0% 26585/com.huawei.systemmanager: 0% user + 0% kernel / faults: 3803 minor 15 major
-      0% 24394/com.huawei.hwid.core: 0% user + 0% kernel / faults: 3106 minor 2 major
-      0% 15978/mdss_fb0: 0% user + 0% kernel
-      0% 1065/com.huawei.health:DaemonService: 0% user + 0% kernel / faults: 1505 minor
-      0% 602/powerlogd: 0% user + 0% kernel / faults: 1 minor
-      0% 603/servicemanager: 0% user + 0% kernel
-      0% 7/rcu_preempt: 0% user + 0% kernel
-      0% 27829/VosMCThread: 0% user + 0% kernel
-      0% 25/rcuop/2: 0% user + 0% kernel
-      0% 10/rcuop/0: 0% user + 0% kernel
-      0% 2847/com.android.phone: 0% user + 0% kernel / faults: 3680 minor
-      0% 344/cfinteractive: 0% user + 0% kernel
-      0% 12843/transport: 0% user + 0% kernel / faults: 28 minor
-      0% 29193/com.huawei.imonitor: 0% user + 0% kernel / faults: 1389 minor
-      0% 20298/com.tencent.mm: 0% user + 0% kernel / faults: 624 minor
-      0% 15807/kworker/0:1: 0% user + 0% kernel
-      0% 22703/com.tencent.mm:push: 0% user + 0% kernel / faults: 634 minor 4 major
-      0% 810/cnss_diag: 0% user + 0% kernel
-      0% 12991/com.android.mms: 0% user + 0% kernel / faults: 457 minor
-      0% 27830/VosTXThread: 0% user + 0% kernel
-      0% 2282/com.huawei.android.pushagent: 0% user + 0% kernel / faults: 976 minor
-      0% 15194/kworker/0:0: 0% user + 0% kernel
-      0% 3/ksoftirqd/0: 0% user + 0% kernel
-      0% 112/system: 0% user + 0% kernel
-      0% 822/hwpged: 0% user + 0% kernel / faults: 1 minor
-      0% 12313/kworker/1:2: 0% user + 0% kernel
-      0% 835/netd: 0% user + 0% kernel / faults: 959 minor
-      0% 24304/chargelogcat: 0% user + 0% kernel
-      0% 12037/kworker/2:0: 0% user + 0% kernel
-      0% 24306/logcat: 0% user + 0% kernel
-      0% 27831/VosRXThread: 0% user + 0% kernel
-      0% 3462/com.huawei.hwid.container1: 0% user + 0% kernel / faults: 2377 minor
-      0% 18028/com.huawei.hwid.container3: 0% user + 0% kernel / faults: 596 minor
-      0% 6313/com.huawei.android.pushagent.PushService: 0% user + 0% kernel / faults: 614 minor
-      0% 14849/kworker/3:0: 0% user + 0% kern
+      //...
 2020-06-04 15:49:47.006 2001-2014/? E/ActivityManager: CPU usage from 1701ms to 2232ms later (2020-06-04 15:49:44.762 to 2020-06-04 15:49:45.293):
       28% 2001/system_server: 21% user + 7.2% kernel / faults: 38 minor
         16% 2010/HeapTaskDaemon: 16% user + 0% kernel
@@ -1081,8 +838,12 @@ Logcat输出的信息中并没有什么有价值的信息。那么我们继续�
 Cmd line: com.hm.aidlclient
 Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/release-keys'
 
-//...
+```
 
+通过进程号pid 18096搜索
+
+
+```
 "main" prio=5 tid=1 Native
   | group="main" sCount=1 dsCount=0 obj=0x77d21af8 self=0x7fa2ea2a00
   | sysTid=18096 nice=-10 cgrp=default sched=0/0 handle=0x7fa6f4ba98
@@ -1120,7 +881,7 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
 
 ```
 
-这里我们看到主线程的状态是`Native`，这个状态是native线程的一个状态，对应java线程的`RUNNABLE`状态。更详细的对应关系可以参考[VMThread.java](https://android.googlesource.com/platform/libcore/+/0806909/libdvm/src/main/java/java/lang/VMThread.java)。然后从下面的信息中我们只看到BinderProxy调用了transactNative()方法，这是一个本地方法，最终会调用服务端Binder对象的transact方法，实现真正的跨进程通信。除了这些我们没有看到其他有用的信息了。那么我们接下来看一看服务端的一些信息，看看能不能找到一些线索。
+这里我们看到Binder客户端主线程的状态是`Native`，这个状态是native线程的一个状态，对应java线程的`RUNNABLE`状态。更详细的对应关系可以参考[VMThread.java](https://android.googlesource.com/platform/libcore/+/0806909/libdvm/src/main/java/java/lang/VMThread.java)。然后从上面的信息中我们只看到BinderProxy调用了transactNative()方法，这是一个本地方法，最终会调用服务端Binder对象的transact()方法，实现真正的跨进程通信。除了这些我们没有看到其他有用的信息了。那么我们接下来看一看服务端的一些信息，看看能不能找到一些线索。
 
 **traces.txt中服务端相关信息**
 
@@ -1129,8 +890,11 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
 Cmd line: com.hm.aidlserver
 Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/release-keys'
 
-//...
+```
 
+通过进程号pid 17773搜索
+
+```
 "main" prio=5 tid=1 Native
   | group="main" sCount=1 dsCount=0 obj=0x77d21af8 self=0x7fa2ea2a00
   | sysTid=17773 nice=0 cgrp=default sched=0/0 handle=0x7fa6f4ba98
@@ -1157,17 +921,16 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
 
 ```
 
-服务端的进程号是pid 17773，我们看到服务端的主线程中也没有什么线索，不要慌，这里我们似乎忘了一点什么，那就是服务端的Binder对象是运行在服务端的Binder线程池中的。那我们怎么找到具体是Binder线程池中的哪个线程呢？其实在traces.txt文件中也是输出了的。
+服务端的进程号是pid 17773，我们看到服务端的主线程中也没有什么线索，不要慌，这里我们似乎忘了一点什么，**那就是服务端的Binder对象是运行在服务端的Binder线程池中的**。那我们怎么找到具体是Binder线程池中的哪个线程呢？其实在traces.txt文件中也是输出了的。
 
 ```
 ----- binder transactions -----
 18096:18096(m.hm.aidlclient:m.hm.aidlclient) -> 17773:17788(m.hm.aidlserver:Binder:17773_2) code: 1
 
 ----- end binder transactions -----
-
 ```
 
-上面这段信息的意思就是，我们是在进程号为18096，内核线程号18096的线程（就是主线程）向进程号为17773，内核线程号17788的线程发起跨进程通信。内核线程号17788的线程的线程名称是Binder:17773_2。那么我们就搜索一下Binder:17773_2。搜索结果如下所示：
+上面这段信息的意思就是，我们是在进程id为18096，内核线程为18096的线程（就是主线程）向进程id为17773，内核线id为17788的线程发起跨进程通信。内核线程id为17788的线程的线程名称是`Binder:17773_2`。那么我们就搜索一下`Binder:17773_2`。搜索结果如下所示：
 
 ```
 "Binder:17773_2" prio=5 tid=10 Sleeping
@@ -1186,8 +949,16 @@ Build fingerprint: 'HUAWEI/MLA-AL10/HWMLA:7.0/HUAWEIMLA-AL10/C00B364:user/releas
   at android.os.Binder.execTransact(Binder.java:565)
 ```
 
-这里我们终于发现了原因，就是服务端的Binder对象的add()方法内部调用了Thread.sleep方法造成长时间无法返回，造成客户端方法执行无法结束，最终导致ANR。
+这里我们终于发现了原因，我们看到`Binder:17773_2`状态是Sleeping，就是服务端的Binder对象的add()方法内部第18行调用了Thread.sleep方法造成长时间无法返回，从而使客户端方法执行无法结束，最终导致ANR。
 
+![binder_anr.png](https://upload-images.jianshu.io/upload_images/3611193-7c912dc6156fdec2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
+
+**总结**：本篇文章列举了几种常见原因造成ANR的示例，并分析了相关日志和traces.txt文件。然而在真实的场景中可能还会有各种稀奇古怪的原因造成ANR，排查起来也会复杂的多，所以最重要的还是防患于未然，在实际的开发过程中尽量避免主线程被长时间阻塞。
+
+
+**文章有错误之处，欢迎批评指正！**
 
 
 参考链接：
