@@ -3,6 +3,7 @@ package com.example.android.jetpackdemo
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.example.android.jetpackdemo.activityresult.GetActivityResultActivity
 import com.example.android.jetpackdemo.lifecycle.LifeCycleActivity
 import com.example.android.jetpackdemo.livedata.LiveDataActivity
 import com.example.android.jetpackdemo.room.BasicRoomFragment
@@ -17,6 +18,9 @@ class StartActivity : AppCompatActivity() {
 
     fun onClick(v: View) {
         when (v.id) {
+            R.id.btnTestGetActivityResult -> {
+                GetActivityResultActivity.launch(this)
+            }
             R.id.btnLiveData -> LiveDataActivity.launch(this)
             R.id.btnBasicRoom -> {
                 ExampleActivity.launch(this, BasicRoomFragment::class.java)
