@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.arch.core.util.Function;
@@ -14,7 +13,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.example.android.jetpackdemo.R;
 import com.example.android.jetpackdemo.databinding.ActivityLiveDataBinding;
 
@@ -37,8 +35,10 @@ public class LiveDataActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate: this" + this);
         super.onCreate(savedInstanceState);
-        ActivityLiveDataBinding binding = DataBindingUtil.<ActivityLiveDataBinding>setContentView(this, R.layout.activity_live_data);
+        ActivityLiveDataBinding binding = DataBindingUtil.<ActivityLiveDataBinding>setContentView(this,
+                R.layout.activity_live_data);
         model = new ViewModelProvider(this).get(NameViewModel.class);
         final Observer<String> observer = new Observer<String>() {
             @Override
@@ -47,7 +47,6 @@ public class LiveDataActivity extends AppCompatActivity {
                 Log.e(TAG, "onChanged: " + newName);
             }
         };
-
 
         model.getCurrentName().setValue("Hello world");
         binding.setModel(model);
@@ -73,6 +72,9 @@ public class LiveDataActivity extends AppCompatActivity {
 
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btnManualRecreateActivity:
+                recreate();
+                break;
             case R.id.btnUpdateLiveData:
                 LiveData<String> data = Transformations.map(model.getCurrentName(), new Function<String, String>() {
                     @Override
@@ -80,12 +82,13 @@ public class LiveDataActivity extends AppCompatActivity {
                         return "map result " + input;
                     }
                 });
-                LiveData<String> data1 = Transformations.switchMap(model.getCurrentName(), new Function<String, LiveData<String>>() {
-                    @Override
-                    public LiveData<String> apply(String input) {
-                        return null;
-                    }
-                });
+                LiveData<String> data1 = Transformations.switchMap(model.getCurrentName(),
+                        new Function<String, LiveData<String>>() {
+                            @Override
+                            public LiveData<String> apply(String input) {
+                                return null;
+                            }
+                        });
                 model.getCurrentName().setValue("name发生了改变" + System.currentTimeMillis());
                 break;
         }
