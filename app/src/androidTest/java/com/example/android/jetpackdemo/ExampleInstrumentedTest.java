@@ -1,4 +1,4 @@
-package com.example.android.jetpackdemo;
+package com.example.architecturecomponents;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
