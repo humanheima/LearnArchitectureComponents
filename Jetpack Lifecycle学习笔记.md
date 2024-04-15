@@ -10,54 +10,16 @@ androidx.lifecycle.Lifecycle.State
 androidx.lifecycle.LifecycleObserver
 ```
 
-Lifecycle类：用于存储有关组件(如 Activity 或 Fragment)的生命周期状态的信息，并允许其他对象观察此状态。
 
-```java
-public abstract class Lifecycle {
-
-    /**
-     * 添加一个LifecycleObserver当LifecycleOwner状态改变的时候会收到通知
-     * <p>
-     * 给定的观察者将被带到LifecycleOwner的当前状态。
-     * 例如，如果LifecycleOwner处于STARTED状态，那么指定的观察者会收到ON_CREATE和ON_START事件。
-     *
-     * @param observer The observer to notify.
-     */
-    @MainThread
-    public abstract void addObserver(@NonNull LifecycleObserver observer);
-
-    /**
-     * 移除指定的观察者
-     * <p>
-     * 如果状态改变正在分发事件的时候调用这个方法
-     * 1. 如果指定的观察者没有收到这个事件，那么它就不会收到事件了。
-     * 2. 如果指定的观察者有超过一个方法在观察当前正在分发的事件并且这少有一个方法收到了事件，
-     * 那么删除操作会在事件分发完毕以后进行。
-     *
-     * @param observer The observer to be removed.
-     */
-    @MainThread
-    public abstract void removeObserver(@NonNull LifecycleObserver observer);
-
-    /**
-     * 返回Lifecycle的当前状态
-     *
-     * @return The current state of the Lifecycle.
-     */
-    @MainThread
-    @NonNull
-    public abstract State getCurrentState();
-
-}
-```
 
 LifecycleOwner接口：定义了一个返回Lifecycle对象的方法。
 
-```
+```java
 public interface LifecycleOwner {
  
     @NonNull
     Lifecycle getLifecycle();
+    
 }
 ```
 
@@ -80,6 +42,47 @@ public class ComponentActivity extends androidx.core.app.ComponentActivity imple
         return mLifecycleRegistry;
     }
     //...          
+}
+```
+
+Lifecycle类：用于存储有关组件(如 Activity 或 Fragment)的生命周期状态的信息，并允许其他对象观察此状态。
+
+```java
+public abstract class Lifecycle {
+
+    /**
+     * 添加一个LifecycleObserver，当LifecycleOwner状态改变的时候会收到通知
+     * <p>
+     * 指定的观察者将被带到LifecycleOwner的当前状态。
+     * 例如，如果LifecycleOwner处于STARTED状态，那么指定的观察者会收到ON_CREATE和ON_START事件。
+     *
+     * @param observer The observer to notify.
+     */
+    @MainThread
+    public abstract void addObserver(@NonNull LifecycleObserver observer);
+
+    /**
+     * 移除指定的观察者
+     * <p>
+     * 当生命周期状态改变事件正在被分发的时候调用这个方法：
+     * 1. 如果指定的观察者没有收到这个事件，那么它就不会收到事件了。
+     * 2. 如果指定的观察者有超过一个方法在观察当前正在分发的事件并且这少有一个方法收到了事件，
+     * 那么删除操作会在事件分发完毕以后进行。
+     *
+     * @param observer The observer to be removed.
+     */
+    @MainThread
+    public abstract void removeObserver(@NonNull LifecycleObserver observer);
+
+    /**
+     * 返回Lifecycle的当前状态
+     *
+     * @return The current state of the Lifecycle.
+     */
+    @MainThread
+    @NonNull
+    public abstract State getCurrentState();
+
 }
 ```
 
@@ -119,10 +122,7 @@ public class ComponentActivity extends androidx.core.app.ComponentActivity imple
 
 `RESUMED`：LifecycleOwner的活动状态。对于Activity来说在onResume()方法调用之后到达这个状态。
 
-Lifecycle.State有一个isAtLeast()方法用来当前Lifecycle.State对象的状态是否到达了指定的状态。状态值大小顺序从大到小。
-```
-RESUMED > STARTED > CREATED > INITIALIZED > DESTROYED
-```
+Lifecycle.State有一个isAtLeast()方法用来当前Lifecycle.State对象的状态是否到达了指定的状态。
 
 ```java
 /**
@@ -134,84 +134,233 @@ public boolean isAtLeast(@NonNull State state) {
 }
 ```
 
-下面看一下FragmentActivity类的生命周期事件都是发射时机。
-
-FragmentActivity类简化版
+状态值大小顺序从大到小。
 
 ```
-public class FragmentActivity {
-    
-    //注释1处
-    final LifecycleRegistry mFragmentLifecycleRegistry = new LifecycleRegistry(this);
+RESUMED > STARTED > CREATED > INITIALIZED > DESTROYED
+```
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        //...
-        super.onCreate(savedInstanceState);
-        //注释2处
-        mFragmentLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE);
-        mFragments.dispatchCreate();
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+ComponentActivity 类的成员变量 LifecycleRegistry 对象，LifecycleRegistry继承Lifecycle。
 
-        //...
-        mFragmentLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START);
-        mFragments.dispatchStart();
-    }
+```java
+private final LifecycleRegistry mLifecycleRegistry = new LifecycleRegistry(this);
+```
 
-    //onResume()方法调用之后会紧接着调用这个方法
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        onResumeFragments();
-    }
+LifecycleRegistry类的构造方法。
 
-    protected void onResumeFragments() {
-        //注释3处
-        mFragmentLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME);
-        mFragments.dispatchResume();
-    }
+```java
+//生命周期状态
+private Lifecycle.State mState;
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mResumed = false;
-        mFragments.dispatchPause();
-        mFragmentLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        //...
-        mFragments.dispatchStop();
-        mFragmentLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mFragments.dispatchDestroy();
-        mFragmentLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY);
-    }
-    
+private LifecycleRegistry(@NonNull LifecycleOwner provider, boolean enforceMainThread) {
+    mLifecycleOwner = new WeakReference<>(provider);
+    //初始状态是INITIALIZED
+    mState = INITIALIZED;
+    mEnforceMainThread = enforceMainThread;
 }
 ```
 
+我们在 LifeCycleActivity 各个生命周期函数中打印一下Lifecycle的状态。
 
-注释1处创建了一个LifecycleRegistry对象，LifecycleRegistry继承Lifecycle。
 
-注释2处，处理ON_CREATE生命周期事件。调用LifecycleRegistry的handleLifecycleEvent方法。
+```java
+override fun onStart() {
+    super.onStart()
+    Log.d(TAG, "onStart: lifecycle.currentState = ${lifecycle.currentState}")
+}
+//省略其他生命周期函数
+```
 
-注释3处，注意一下，ON_RESUME事件并不是在onResume()方法中发射的，而是在onPostResume()这个方法中发射的。onResume()方法调用之后会紧接着调用onPostResume()方法。
+输出结果
+```
+2024-04-15 17:36:57.888 LifeCycleActivity                D  onCreate: lifecycle.currentState = INITIALIZED
+2024-04-15 17:36:57.889 LifeCycleActivity                D  onStart: lifecycle.currentState = CREATED
+2024-04-15 17:36:57.889 LifeCycleActivity                D  onResume: lifecycle.currentState = STARTED
+2024-04-15 17:37:00.367 LifeCycleActivity                D  onCreate: lifecycle.currentState = RESUMED
+2024-04-15 17:37:15.686 LifeCycleActivity                D  onPause: lifecycle.currentState = STARTED
+2024-04-15 17:37:16.149 LifeCycleActivity                D  onStop: lifecycle.currentState = CREATED
+2024-04-15 17:37:16.150 LifeCycleActivity                D  onDestroy: lifecycle.currentState = DESTROYED
 
-还有一点可以留意一下，就是ON_CREATE，ON_START和ON_RESUME这三个事件在发射之后会执行`mFragments.dispatchXXX`。而ON_PAUSE，ON_STOP和ON_DESTROY这三个事件都是在`mFragments.dispatchXXX`调用之后发射的。
+```
 
-下面我们看看如何订阅生命周期事件。
+### 接下来我们看看 LifecycleRegistry 的生命周期状态值是怎么改变的。
+
+先说一下结论：
+
+1. 先回调 Activity 的 onCreate() 方法，然后改变 LifecycleRegistry 的状态为 CREATED。
+2. 先回调 Activity 的 onStart() 方法，然后改变 LifecycleRegistry 的状态为 STARTED。
+3. 先回调 Activity 的 onResume() 方法，然后改变 LifecycleRegistry 的状态为 RESUMED。
+4. 从 onPause开始。先改变 LifecycleRegistry 的状态为 STARTED，然后回调 Activity 的 onPause() 方法。
+5. 先改变 LifecycleRegistry 的状态为 CREATED，然后回调 Activity 的 onStop() 方法。
+6. 先改变 LifecycleRegistry 的状态为 DESTROYED，然后回调 Activity 的 onDestroy() 方法。
+
+
+LifecycleRegistry 的 handleLifecycleEvent() 方法。
+
+```java
+public void handleLifecycleEvent(@NonNull Lifecycle.Event event) {
+    enforceMainThreadIfNeeded("handleLifecycleEvent");
+    //注释1处
+    moveToState(event.getTargetState());
+}
+```
+注释1处，根据生命周期事件获取对应的状态。先调用 `event.getTargetState()` 方法获取对应的状态。再调用 `moveToState()` 方法。
+
+Lifecycle.Event 的 getTargetState() 方法。
+
+```java
+public State getTargetState() {
+    switch(this) {
+        case ON_CREATE:
+        case ON_STOP:
+            return State.CREATED;
+        case ON_START:
+        case ON_PAUSE:
+            return State.STARTED;
+        case ON_RESUME:
+            return State.RESUMED;
+        case ON_DESTROY:
+            return State.DESTROYED;
+        case ON_ANY:
+            break;
+    }
+    throw new IllegalArgumentException(this + " has no target state");
+}
+
+```
+
+### Activity 的 performCreate() 方法
+
+```java
+final void performCreate(Bundle icicle, PersistableBundle persistentState) {
+
+    dispatchActivityPreCreated(icicle);
+    mCanEnterPictureInPicture = true;
+    // initialize mIsInMultiWindowMode and mIsInPictureInPictureMode before onCreate
+    final int windowingMode = getResources().getConfiguration().windowConfiguration
+        .getWindowingMode();
+    mIsInMultiWindowMode = inMultiWindowMode(windowingMode);
+    mIsInPictureInPictureMode = windowingMode == WINDOWING_MODE_PINNED;
+    restoreHasCurrentPermissionRequest(icicle);
+    if(persistentState != null) {
+        onCreate(icicle, persistentState);
+    } else {
+        //注释1处，调用Activity的onCreate生命周期方法
+        onCreate(icicle);
+    }
+    mActivityTransitionState.readState(icicle);
+
+    mVisibleFromClient = !mWindow.getWindowStyle().getBoolean(
+        com.android.internal.R.styleable.Window_windowNoDisplay, false);
+    mFragments.dispatchActivityCreated();
+    mActivityTransitionState.setEnterActivityOptions(this,
+        getActivityOptions());
+    //注释2处，改变LifecycleRegistry的状态为 CREATED
+    dispatchActivityPostCreated(icicle);
+}
+
+```
+
+注释1处，先调用 Activity 的 onCreate() 方法。然后注释2处，改变 LifecycleRegistry 的状态为 CREATED。
+
+
+### Activity 的 performStart() 方法
+
+```java
+final void performStart(String reason) {
+   
+    //注释1处，调用Activity的onStart生命周期方法
+    mInstrumentation.callActivityOnStart(this);
+    //...
+    //注释2处，改变LifecycleRegistry的状态为 STARTED
+    dispatchActivityPostStarted();
+}
+```
+
+注释1处，调用 Activity 的 onStart() 方法。然后注释2处，改变 LifecycleRegistry 的状态为 STARTED。
+
+
+### Activity 的 performResume() 方法
+
+```java
+final void performResume(boolean followedByPause, String reason) {
+
+
+    //注释1处，调用Activity的onResume生命周期方法
+    mInstrumentation.callActivityOnResume(this);
+    //...
+    //注释2处，改变LifecycleRegistry的状态为 RESUMED
+    dispatchActivityPostResumed();
+    Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
+}
+
+```
+
+注释1处，先调用 Activity 的 onResume() 方法。然后注释2处，改变 LifecycleRegistry 的状态为 RESUMED。
+
+### Activity 的 performPause() 方法
+
+```java
+final void performPause() {
+    //注释1处，
+    dispatchActivityPrePaused();
+    //..
+    //注释2处，调用Activity的onPause生命周期方法
+    onPause();
+    mResumed = false;
+    dispatchActivityPostPaused();
+    //...
+}
+```
+
+注释1处，先改变 LifecycleRegistry 的状态为 STARTED ，然后调用 Activity 的 onPause() 方法。
+
+
+### Activity 的 performStop() 方法
+
+```java
+final void performStop(boolean preserveWindow, String reason) {
+    //...
+    if(!mStopped) {
+        //注释1处，先改变 LifecycleRegistry 的状态
+        dispatchActivityPreStopped();
+        //...
+        //注释2处，调用Activity的onStop生命周期方法
+        mFragments.dispatchStop();
+
+        mCalled = false;
+        mInstrumentation.callActivityOnStop(this);
+        mStopped = true;
+        dispatchActivityPostStopped();
+    }
+}
+```
+
+注释1处，先改变 LifecycleRegistry 的状态为 CREATED ，然后调用 Activity 的 onStop() 方法。
+
+### Activity 的 performDestroy() 方法
+
+```java
+final void performDestroy() {
+      
+        //注释1处，先改变 LifecycleRegistry 的状态为 DESTROYED
+        dispatchActivityPreDestroyed();
+        mDestroyed = true;
+        mWindow.destroy();
+        //注释2处，调用Activity的onDestroy生命周期方法
+        mFragments.dispatchDestroy();
+        onDestroy();
+        
+        dispatchActivityPostDestroyed();
+    }
+ 
+```
+
+注释1处，先改变 LifecycleRegistry 的状态为 DESTROYED，然后调用 Activity 的 onDestroy() 方法。
+
+
+### 下面我们看看如何订阅生命周期事件。
 
 首先自定义观察者类实现LifecycleObserver接口，然后使用注解订阅感兴趣的事件即可。
 ```kotlin
@@ -255,9 +404,11 @@ class MyObserver : LifecycleObserver {
 
 }
 ```
+
 这里我们订阅了所有的生命周期事件。
 
 我们在Activity中使用一下。
+
 ```kotlin
 class LifeCycleActivity : AppCompatActivity() {
 
@@ -296,6 +447,7 @@ D/MyObserver: onPause:
 D/MyObserver: onStop: 
 D/MyObserver: onDestroy: 
 ```
+
 以上就是简单的使用，接下来我们看一看LifecycleRegistry类。
 
 ```java
@@ -319,7 +471,8 @@ public class LifecycleRegistry extends Lifecycle {
 }
 ```
 LifecycleRegistry类的handleLifecycleEvent()方法。
-```
+
+```java
 /**
  * 设置当前的生命周期状态并通知生命周期事件观察者
  * <p>
@@ -328,35 +481,10 @@ LifecycleRegistry类的handleLifecycleEvent()方法。
  * @param event 收到的生命周期事件
  */
 public void handleLifecycleEvent(@NonNull Lifecycle.Event event) {
-    //注释1处
-    State next = getStateAfter(event);
-    moveToState(next);
+    enforceMainThreadIfNeeded("handleLifecycleEvent");
+    moveToState(event.getTargetState());
 }
 ```
-
-注释1处，根据生命周期事件获取对应的状态。
-
-```java
-static State getStateAfter(Event event) {
-    switch (event) {
-        case ON_CREATE:
-        case ON_STOP:
-            return CREATED;
-        case ON_START:
-        case ON_PAUSE:
-            return STARTED;
-        case ON_RESUME:
-            return RESUMED;
-        case ON_DESTROY:
-            return DESTROYED;
-        case ON_ANY:
-            break;
-    }
-    //如果是ON_ANY事件会抛出异常
-    throw new IllegalArgumentException("Unexpected event value " + event);
-}
-```
-LifecycleOwner类不可以发射ON_ANY事件，如果是ON_ANY事件则抛出异常。
 
 转移到正确的生命周期状态。
 ```java
@@ -373,6 +501,7 @@ private void moveToState(State next) {
         // we will figure out what to do on upper level.
         return;
     }
+    //将mHandlingEvent置为true，表示正在处理事件，然后调用sync()方法
     mHandlingEvent = true;
     sync();
     mHandlingEvent = false;
@@ -394,13 +523,10 @@ if (mHandlingEvent || mAddingObserverCounter != 0) {
 
 接下来我们看一下sync方法。
 
-```
+```java
 private void sync() {
     LifecycleOwner lifecycleOwner = mLifecycleOwner.get();
-    if (lifecycleOwner == null) {
-        throw new IllegalStateException("LifecycleOwner of this LifecycleRegistry is already"
-                + "garbage collected. It is too late to change lifecycle state.");
-    }
+    //...
     //注释1处
     while (!isSynced()) {
         mNewEventOccurred = false;
@@ -431,6 +557,7 @@ private boolean isSynced() {
     State eldestObserverState = mObserverMap.eldest().getValue().mState;
     //最新的观察者状态
     State newestObserverState = mObserverMap.newest().getValue().mState;
+    //根据新旧状态和当前状态判断
     return eldestObserverState == newestObserverState && mState == newestObserverState;
 }
 ```
@@ -442,7 +569,7 @@ RESUMED > STARTED > CREATED > INITIALIZED > DESTROYED
 
 当前状态小于最老的观察者的状态，什么意思呢？比如说，当前状态是STARTED而最老的观察者的状态是RESUMED，STARTED<RESUMED，也就是说LifecycleOwner从onResume状态即将切换到onPause状态。
 
-```
+```java
 private void backwardPass(LifecycleOwner lifecycleOwner) {
     Iterator<Entry<LifecycleObserver, ObserverWithState>> descendingIterator =
             mObserverMap.descendingIterator();
@@ -465,7 +592,7 @@ private void backwardPass(LifecycleOwner lifecycleOwner) {
 
 sync方法的注释3处，如果当前状态大于最新观察者的状态，则增大观察者的状态。
 
-```
+```java
 private void forwardPass(LifecycleOwner lifecycleOwner) {
     Iterator<Entry<LifecycleObserver, ObserverWithState>> ascendingIterator =
             mObserverMap.iteratorWithAdditions();
@@ -484,11 +611,12 @@ private void forwardPass(LifecycleOwner lifecycleOwner) {
 
 
 我们再看一下LifecycleRegistry的addObserver()方法
-```
+```java
 @Override
 public void addObserver(@NonNull LifecycleObserver observer) {
     //正常情况下，默认状态是INITIALIZED
     State initialState = mState == DESTROYED ? DESTROYED : INITIALIZED;
+    //将传入的LifecycleObserver包装成一个ObserverWithState对象。
     ObserverWithState statefulObserver = new ObserverWithState(observer, initialState);
     //只添加一次，避免重复添加
     ObserverWithState previous = mObserverMap.putIfAbsent(observer, statefulObserver);
@@ -552,3 +680,18 @@ private State calculateTargetState(LifecycleObserver observer) {
 参考链接：
 
 * [使用生命周期感知型组件处理生命周期](https://developer.android.google.cn/topic/libraries/architecture/lifecycle?hl=zh_cn)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
