@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.arch.core.util.Function;
@@ -13,6 +14,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.example.architecturecomponents.R;
 import com.example.architecturecomponents.databinding.ActivityLiveDataBinding;
 
@@ -40,6 +42,7 @@ public class LiveDataActivity extends AppCompatActivity {
         ActivityLiveDataBinding binding = DataBindingUtil.<ActivityLiveDataBinding>setContentView(this,
                 R.layout.activity_live_data);
         model = new ViewModelProvider(this).get(NameViewModel.class);
+        Log.i(TAG, "onCreate: model = " + model);
         final Observer<String> observer = new Observer<String>() {
             @Override
             public void onChanged(@Nullable String newName) {
