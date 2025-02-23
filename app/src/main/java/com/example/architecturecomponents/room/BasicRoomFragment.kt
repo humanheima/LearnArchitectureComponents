@@ -10,12 +10,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import com.example.architecturecomponents.R
+import com.example.architecturecomponents.databinding.FragmentBaiscRoomBinding
 import com.example.architecturecomponents.room.dao.PlaylistDao
 import com.example.architecturecomponents.room.dao.WordDao
-import com.example.architecturecomponents.room.entities.*
-import kotlinx.android.synthetic.main.fragment_baisc_room.*
+import com.example.architecturecomponents.room.entities.NameAndDescription
+import com.example.architecturecomponents.room.entities.Playlist
+import com.example.architecturecomponents.room.entities.Word
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -42,6 +43,8 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
 
     var playlistId = 0L
 
+    private var binding: FragmentBaiscRoomBinding? = null
+
     companion object {
         private const val TAG = "BasicRoomFragment"
         fun newInstance(): BasicRoomFragment {
@@ -54,13 +57,16 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fruitViewModel = ViewModelProvider(this,
-                AndroidViewModelFactory(activity!!.application)
-        ).get(FruitViewModel::class.java)
+        fruitViewModel = ViewModelProvider(this).get(FruitViewModel::class.java)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_baisc_room, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentBaiscRoomBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -70,9 +76,9 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        wordDAO = WordRoomDatabase.getDatabase(context!!, this).wordDao()
+        wordDAO = WordRoomDatabase.getDatabase(requireContext(), this).wordDao()
         allWords = wordDAO.getAlphabetizedWords()
-        allWords.observe(this, Observer { list ->
+        allWords.observe(viewLifecycleOwner, Observer { list ->
 
             //index = list.size
             Log.d(TAG, "onViewCreated: index = $index")
@@ -82,20 +88,21 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
             // do nothing
         })
 
-        playlistDao = WordRoomDatabase.getDatabase(context!!, this).playlistDao()
+        playlistDao = WordRoomDatabase.getDatabase(requireContext(), this).playlistDao()
 
         playlist = playlistDao.getList()
 
-        playlist.observe(this, Observer { list ->
+        playlist.observe(viewLifecycleOwner, Observer { list ->
             list.forEach {
                 playlistId = it.playlistId
                 Log.d(TAG, "playList: $it")
             }
         })
-        btn_insert.setOnClickListener(this)
-        btn_delete.setOnClickListener(this)
-        btn_update.setOnClickListener(this)
-        btn_query.setOnClickListener(this)
+        binding?.btnInsert?.setOnClickListener(this)
+        binding?.btnQuery?.setOnClickListener(this)
+        binding?.btnUpdate?.setOnClickListener(this)
+        binding?.btnDelete?.setOnClickListener(this)
+
     }
 
     override fun onClick(view: View) {
@@ -106,6 +113,7 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
                 //insertAddress()
                 insertPlaylist()
             }
+
             R.id.btn_query -> {
                 //query();
                 //queryFruit()
@@ -117,12 +125,14 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
                 //updateWord()
                 updatePlayList()
             }
+
             R.id.btn_delete -> {
                 //delete()
                 //
                 // deleteWord()
                 deletePlaylist()
             }
+
             else -> {
             }
         }
@@ -227,7 +237,8 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
                 address
             )
             user.id = 4
-            val rowAffected = com.example.architecturecomponents.App.getDataBase().userDao().deleteUsers(user)
+            val rowAffected =
+                com.example.architecturecomponents.App.getDataBase().userDao().deleteUsers(user)
             Log.d(TAG, "run: rowAffected=$rowAffected")
         }
     }
@@ -249,7 +260,8 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
                 address
             )
             user.id = 1
-            val rowAffected = com.example.architecturecomponents.App.getDataBase().userDao().updateUsers(user)
+            val rowAffected =
+                com.example.architecturecomponents.App.getDataBase().userDao().updateUsers(user)
             Log.d(TAG, "run: rowAffected=$rowAffected")
         }
     }
@@ -311,7 +323,8 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
     }
 
     private fun queryFruit() {
-        fruitViewModel!!.query(1L).observe(this, Observer { fruit -> Log.d(TAG, "queryFruit: " + fruit?.name) })
+        fruitViewModel!!.query(1L)
+            .observe(this, Observer { fruit -> Log.d(TAG, "queryFruit: " + fruit?.name) })
     }
 
     private fun observeFruits() {

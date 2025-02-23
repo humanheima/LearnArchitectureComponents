@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.architecturecomponents.R
 import com.example.architecturecomponents.room.entities.Word
 import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.main.recyclerview_item.*
 
 /**
  * Created by dumingwei on 2020-03-11.
@@ -36,7 +35,7 @@ class WordListAdapter internal constructor(
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
         val current = words[position]
-        holder.textView.text = current.word
+        //holder.textView.text = current.word
     }
 
     inner class WordViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), LayoutContainer {

@@ -14,8 +14,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.architecturecomponents.R
+import com.example.architecturecomponents.databinding.FragmentCodeLabRoomExampleBinding
 import com.example.architecturecomponents.room.entities.Word
-import kotlinx.android.synthetic.main.fragment_code_lab_room_example.*
 
 /**
  * Crete by dumingwei on 2020-03-11
@@ -38,6 +38,7 @@ class CodeLabRoomExampleFragment : Fragment() {
     private lateinit var adapter: WordListAdapter
 
 
+    private lateinit var binding: FragmentCodeLabRoomExampleBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -45,23 +46,27 @@ class CodeLabRoomExampleFragment : Fragment() {
             adapter = WordListAdapter(ctx)
 
             //wordViewModel = ViewModelProvider(this).get(WordViewModel::class.java)
-            wordViewModel = ViewModelProvider(this,
-                    ViewModelProvider.AndroidViewModelFactory(activity!!.application)
+            wordViewModel = ViewModelProvider(
+                this,
+                ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
             ).get(WordViewModel::class.java)
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_code_lab_room_example, container, false)
+        binding = FragmentCodeLabRoomExampleBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         context?.let {
-            recyclerView.adapter = adapter
-            recyclerView.layoutManager = LinearLayoutManager(it)
+            binding.recyclerView.adapter = adapter
+            binding.recyclerView.layoutManager = LinearLayoutManager(it)
         }
 
         wordViewModel.allWords.observe(this, Observer { words ->
@@ -73,7 +78,7 @@ class CodeLabRoomExampleFragment : Fragment() {
             }
         })
 
-        fab.setOnClickListener {
+        binding.fab.setOnClickListener {
             val intent = Intent(activity, NewWordActivity::class.java)
             startActivityForResult(intent, newWordActivityRequestCode)
         }
@@ -90,9 +95,10 @@ class CodeLabRoomExampleFragment : Fragment() {
             }
         } else {
             Toast.makeText(
-                    context,
-                    R.string.empty_not_saved,
-                    Toast.LENGTH_LONG).show()
+                context,
+                R.string.empty_not_saved,
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 

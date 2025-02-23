@@ -6,10 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.arch.core.util.Function;
-import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
@@ -24,23 +24,31 @@ import com.example.architecturecomponents.databinding.ActivityLiveDataBinding;
  */
 public class LiveDataActivity extends AppCompatActivity {
 
-
     private final String TAG = getClass().getSimpleName();
     private NameViewModel model;
     private Observer<String> foreverObserver;
-
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, LiveDataActivity.class);
         context.startActivity(intent);
     }
 
+    /**
+     * onRestoreInstanceState 方法 在onCreate 之后调用
+     *
+     * @param savedInstanceState the data most recently supplied in {@link #onSaveInstanceState}.
+     */
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.e(TAG, "onRestoreInstanceState: ");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "onCreate: this" + this);
+        Log.e(TAG, "onCreate: this" + this);
         super.onCreate(savedInstanceState);
-        ActivityLiveDataBinding binding = DataBindingUtil.<ActivityLiveDataBinding>setContentView(this,
-                R.layout.activity_live_data);
+        ActivityLiveDataBinding binding = ActivityLiveDataBinding.inflate(getLayoutInflater());
         model = new ViewModelProvider(this).get(NameViewModel.class);
         Log.i(TAG, "onCreate: model = " + model);
         final Observer<String> observer = new Observer<String>() {
@@ -52,8 +60,8 @@ public class LiveDataActivity extends AppCompatActivity {
         };
 
         model.getCurrentName().setValue("Hello world");
-        binding.setModel(model);
-        binding.setLifecycleOwner(this);
+        //binding.setModel(model);
+        //binding.setLifecycleOwner(this);
 
         //观察者要和LifecycleOwner
         model.getCurrentName().observe(this, observer);
@@ -96,7 +104,6 @@ public class LiveDataActivity extends AppCompatActivity {
                 break;
         }
     }
-
 
     @Override
     protected void onDestroy() {

@@ -15,7 +15,7 @@ class FruitViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: FruitRepository
 
-    val fruits: LiveData<List<com.example.architecturecomponents.room.entities.Fruit>>
+    val fruits: LiveData<List<Fruit>>
 
     init {
 
@@ -24,9 +24,10 @@ class FruitViewModel(application: Application) : AndroidViewModel(application) {
         fruits = repository.fruits
     }
 
-    fun insert(fruit: com.example.architecturecomponents.room.entities.Fruit) = viewModelScope.launch {
-        repository.insert(fruit)
-    }
+    fun insert(fruit: com.example.architecturecomponents.room.entities.Fruit) =
+        viewModelScope.launch {
+            repository.insert(fruit)
+        }
 
 
     fun query(id: Long): LiveData<com.example.architecturecomponents.room.entities.Fruit?> {
