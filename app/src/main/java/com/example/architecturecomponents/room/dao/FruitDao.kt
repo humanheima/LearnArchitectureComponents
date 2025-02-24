@@ -12,14 +12,14 @@ import com.example.architecturecomponents.room.entities.Fruit
 interface FruitDao {
 
     @get:Query("SELECT * FROM fruit")
-    val fruits: LiveData<List<com.example.architecturecomponents.room.entities.Fruit>>
+    val fruits: LiveData<List<Fruit>>
 
     @Query("SELECT * FROM fruit WHERE id= :id LIMIT 1")
-    fun queryFruitWithId(id: Long): LiveData<com.example.architecturecomponents.room.entities.Fruit?>
+    fun queryFruitWithId(id: Long): LiveData<Fruit?>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertFruit(fruit: com.example.architecturecomponents.room.entities.Fruit)
+    suspend fun insertFruit(fruit: Fruit)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertFruits(fruitList: List<com.example.architecturecomponents.room.entities.Fruit>)
+    suspend fun insertFruits(fruitList: List<Fruit>)
 }

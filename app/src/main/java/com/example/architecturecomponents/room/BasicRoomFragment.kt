@@ -323,12 +323,12 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
     }
 
     private fun queryFruit() {
-        fruitViewModel!!.query(1L)
-            .observe(this, Observer { fruit -> Log.d(TAG, "queryFruit: " + fruit?.name) })
+        fruitViewModel?.query(1L)
+            ?.observe(this, { fruit -> Log.d(TAG, "queryFruit: " + fruit?.name) })
     }
 
     private fun observeFruits() {
-        fruitViewModel!!.fruits.observe(this, Observer { fruits ->
+        fruitViewModel?.fruits?.observe(viewLifecycleOwner, { fruits ->
             for (fruit in fruits) {
                 Log.d(TAG, "onChanged: $fruit")
             }
