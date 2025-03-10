@@ -328,11 +328,11 @@ class BasicRoomFragment : Fragment(), View.OnClickListener, CoroutineScope by Ma
     }
 
     private fun observeFruits() {
-        fruitViewModel?.fruits?.observe(viewLifecycleOwner, { fruits ->
+        fruitViewModel?.fruits?.observe(viewLifecycleOwner) { fruits ->
             for (fruit in fruits) {
                 Log.d(TAG, "onChanged: $fruit")
             }
-        })
+        }
     }
 
     override fun onDestroy() {
