@@ -22,9 +22,7 @@ class StartActivity : AppCompatActivity() {
                 GetActivityResultActivity.launch(this)
             }
 
-            R.id.btnLiveData -> LiveDataActivity.launch(
-                this
-            )
+            R.id.btnLiveData -> LiveDataActivity.launch(this)
 
             R.id.btnBasicRoom -> {
                 ExampleActivity.launch(

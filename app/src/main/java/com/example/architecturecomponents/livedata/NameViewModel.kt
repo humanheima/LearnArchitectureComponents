@@ -15,4 +15,8 @@ class NameViewModel : ViewModel() {
         MutableLiveData<String>()
     }
 
+    val sport: MutableLiveData<String> by lazy {
+        MutableLiveData<String>("足球")
+    }
+
 }
