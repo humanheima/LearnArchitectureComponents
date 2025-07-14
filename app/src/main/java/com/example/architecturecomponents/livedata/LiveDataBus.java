@@ -15,6 +15,7 @@ import java.util.Map;
 /**
  * Created by p_dmweidu on 2025/3/16
  * Desc: LiveDataBus
+ * https://tech.meituan.com/2018/07/26/android-livedatabus.html
  */
 public final class LiveDataBus {
 
@@ -63,6 +64,27 @@ public final class LiveDataBus {
 
         /**
          * 如果回调是observeForever方法引起的，那么就不回调真正的订阅者。解决粘性事件
+         *
+         * @MainThread
+         *     public void observeForever(@NonNull Observer<? super T> observer) {
+         *         assertMainThread("observeForever");
+         *         AlwaysActiveObserver wrapper = new AlwaysActiveObserver(observer);
+         *         ObserverWrapper existing = mObservers.putIfAbsent(observer, wrapper);
+         *         if (existing instanceof LiveData.LifecycleBoundObserver) {
+         *             throw new IllegalArgumentException("Cannot add the same observer"
+         *                     + " with different lifecycles");
+         *         }
+         *         if (existing != null) {
+         *             return;
+         *         }
+         *         //注释1处，这里也会回调到onChanged。
+         *         wrapper.activeStateChanged(true);
+         *     }
+         *
+         *  在调用 observeForever方法  注释1处，这里也会回调到 onChanged 。这里的 onChanged 忽略。
+         *
+         *  其他 LiveData 的 比如 setValue导致发生变化 会回调到 onChanged，就正常执行。
+         *
          *
          * @return
          */

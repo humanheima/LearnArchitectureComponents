@@ -22,7 +22,7 @@
 ### 粘性事件
 
 
-LiveData 的粘性特性是指新观察者在订阅时会收到最近一次更新的数据。这是通过 mVersion 和观察者的 mLastVersion 比较实现的：
+LiveData 的粘性特性是指新观察者在订阅时会收到最近一次更新的数据。LiveData 默认是粘性的。这是通过 mVersion 和观察者的 mLastVersion 比较实现的：
 
 1. 首先创建的 LifecycleBoundObserver 观察 LifeCycleOwner 的生命周期状态的时候。LifecycleBoundObserver内部会被封装成一个 ObserverWithState。
 2. ObserverWithState 初始状态是 INITIALIZED。LifeCycleOwner 生命周期状态 targetState 比如是 RESUMED ，是 大于 INITIALIZED。就会主动通知 LifecycleBoundObserver 调用 dispatchingValue 方法，通知观察者。
