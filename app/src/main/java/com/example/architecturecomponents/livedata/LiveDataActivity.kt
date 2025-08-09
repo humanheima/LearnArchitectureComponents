@@ -29,6 +29,9 @@ class LiveDataActivity : AppCompatActivity() {
     private lateinit var model: NameViewModel
     private lateinit var foreverObserver: Observer<String>
 
+    // 使用 ViewModelProvider 获取 ViewModel 实例
+    private lateinit var counterViewModel: CounterViewModel
+
     /**
      * onRestoreInstanceState 方法 在onCreate 之后调用
      *
@@ -83,6 +86,18 @@ class LiveDataActivity : AppCompatActivity() {
          */
         //model.currentName.observeForever(foreverObserver)
 
+        counterViewModel = ViewModelProvider(this).get(CounterViewModel::class.java)
+
+
+        // 观察 ViewModel 中的 LiveData，更新 UI
+        counterViewModel.count.observe(this, Observer { count ->
+            binding.tvCount.text = "count = $count"
+        })
+
+        // 按钮点击事件，触发 ViewModel 的逻辑
+        binding.btnIncreaseCount.setOnClickListener {
+            counterViewModel.incrementCount()
+        }
     }
 
     private val anotherObserver: Observer<String> =
@@ -93,7 +108,7 @@ class LiveDataActivity : AppCompatActivity() {
     fun onClick(view: View) {
         when (view.id) {
             R.id.btn_observe_another -> {
-                model.currentName.observe(this,anotherObserver)
+                model.currentName.observe(this, anotherObserver)
             }
 
             R.id.btnManualRecreateActivity -> recreate()
